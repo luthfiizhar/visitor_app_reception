@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:hive/hive.dart';
 // import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:pinput/pinput.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/regular_button.dart';
+import 'package:http/http.dart' as http;
+import 'package:visitor_app/constant.dart';
 
 class InvitationPage extends StatefulWidget {
   const InvitationPage({Key? key}) : super(key: key);
@@ -30,9 +34,34 @@ class _InvitationPageState extends State<InvitationPage> {
 
   bool hasError = false;
   String currentText = "";
+  String? inviteCode;
 
   String? pinCode;
   TextEditingController _pinCode = TextEditingController();
+
+  Future getVisitorListByInviteCode() async {
+    var url = Uri.http(apiUrl, '/api/visitor/get-visitor-invitation');
+    Map<String, String> requestHeader = {
+      'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
+      'Content-Type': 'application/json'
+    };
+    var bodySend = """ 
+      {
+          "Code" : "7J4ILZ"
+      }
+    """;
+    var response = await http.post(url, headers: requestHeader, body: bodySend);
+    var data = json.decode(response.body);
+    print(data);
+    if (data['Status'] == "200") {
+      var listBox = await Hive.openBox('listBox');
+      listBox.put(
+          'attendants',
+          data['Data']['Attendants'] != null
+              ? data['Data']['Attendants']
+              : null);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +188,11 @@ class _InvitationPageState extends State<InvitationPage> {
                                 textCapitalization:
                                     TextCapitalization.characters,
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                onCompleted: (pin) => print(pin),
+                                onCompleted: (pin) {
+                                  setState(() {
+                                    inviteCode = pin;
+                                  });
+                                },
                                 length: 6,
                                 defaultPinTheme: defaultPinTheme,
                                 focusedPinTheme: focusedPinTheme,
@@ -192,7 +225,11 @@ class _InvitationPageState extends State<InvitationPage> {
                         title: 'Next',
                         onTap: () {
                           if (_formKey.currentState!.validate()) {
-                            Navigator.pushNamed(context, '/guestList');
+                            _formKey.currentState!.save();
+                            print(inviteCode);
+                            getVisitorListByInviteCode().then((value) {
+                              Navigator.pushNamed(context, '/guestList');
+                            });
                           }
                         },
                       ),

@@ -10,6 +10,7 @@ Future saveVisitorData(
     String origin,
     String employee,
     String reason,
+    String photo,
     bool completed) async {
   var box = await Hive.openBox('visitorBox');
   box.put('firstName', firstName != null ? firstName : "");
@@ -21,6 +22,7 @@ Future saveVisitorData(
   box.put('origin', origin != null ? origin : "");
   box.put('employee', employee != null ? employee : "");
   box.put('reason', reason != null ? reason : "");
+  box.put('photo', photo != null ? photo : "");
   box.put('completed', completed);
 
   var name;

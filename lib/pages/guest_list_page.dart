@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
@@ -9,8 +11,10 @@ import 'package:visitor_app/class/visitor.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
 import 'package:visitor_app/components/regular_button.dart';
+import 'package:visitor_app/constant.dart';
 import 'package:visitor_app/functions/hive_functions.dart';
 import 'package:visitor_app/pages/new_guest_page.dart';
+import 'package:http/http.dart' as http;
 
 class GuestListPage extends StatefulWidget {
   const GuestListPage({Key? key}) : super(key: key);
@@ -23,6 +27,8 @@ class _GuestListPageState extends State<GuestListPage> {
   bool checkGuest = false;
   List<GuestList> items = [];
   List<Visitor> visitorList = [];
+  List<Visitor> attendantList = [];
+  dynamic detailVisitor;
   final List<Visitor> selectedVisitor = [];
   bool firstNameEmpty = false;
   bool lastNameEmpty = false;
@@ -43,58 +49,109 @@ class _GuestListPageState extends State<GuestListPage> {
     items.add(GuestList(false, 'Coco Mcmillan', true));
     items.add(GuestList(false, 'Yasin Barber', true));
 
-    visitorList.add(Visitor(
-        firstName: 'Ayana',
-        lastName: 'Dunne',
-        email: 'ayadunne@gmail.com',
-        phoneCode: '62',
-        phoneNumber: '8585858585',
-        origin: 'PT XYZ',
-        employee: 'Mr A',
-        reason: '2',
-        gender: '2',
-        enabled: false,
-        completed: true));
-    visitorList.add(Visitor(
-        firstName: 'Jaques',
-        lastName: 'Sierra',
-        email: 'jaques@gmail.com',
-        phoneCode: '62',
-        phoneNumber: '8585858585',
-        origin: 'PT XYZ',
-        employee: 'Mr B',
-        reason: '1',
-        gender: '1',
-        enabled: false,
-        completed: true));
-    visitorList.add(Visitor(
-        firstName: 'Sion',
-        lastName: 'Goulding',
-        email: 'sion@gmail.com',
-        phoneCode: '62',
-        phoneNumber: '8585858585',
-        origin: 'PT XYZ',
-        employee: 'Mr C',
-        reason: '',
-        gender: '1',
-        enabled: false,
-        completed: true));
-    visitorList.add(Visitor(
-        firstName: 'Theodora',
-        lastName: 'Neal',
-        email: 'theodora@gmail.com',
-        phoneCode: '62',
-        phoneNumber: '8585858585',
-        origin: 'PT XYZ',
-        employee: 'Mr A',
-        reason: '',
-        gender: '2',
-        enabled: false,
-        completed: true));
+    // visitorList.add(Visitor(
+    //     firstName: 'Ayana',
+    //     lastName: 'Dunne',
+    //     email: 'ayadunne@gmail.com',
+    //     phoneCode: '62',
+    //     phoneNumber: '8585858585',
+    //     origin: 'PT XYZ',
+    //     employee: 'Mr A',
+    //     reason: '2',
+    //     gender: '2',
+    //     enabled: false,
+    //     completed: true));
+    // visitorList.add(Visitor(
+    //     firstName: 'Jaques',
+    //     lastName: 'Sierra',
+    //     email: 'jaques@gmail.com',
+    //     phoneCode: '62',
+    //     phoneNumber: '8585858585',
+    //     origin: 'PT XYZ',
+    //     employee: 'Mr B',
+    //     reason: '1',
+    //     gender: '1',
+    //     enabled: false,
+    //     completed: true));
+    // visitorList.add(Visitor(
+    //     firstName: 'Sion',
+    //     lastName: 'Goulding',
+    //     email: 'sion@gmail.com',
+    //     phoneCode: '62',
+    //     phoneNumber: '8585858585',
+    //     origin: 'PT XYZ',
+    //     employee: 'Mr C',
+    //     reason: '',
+    //     gender: '1',
+    //     enabled: false,
+    //     completed: true));
+    // visitorList.add(Visitor(
+    //     firstName: 'Theodora',
+    //     lastName: 'Neal',
+    //     email: 'theodora@gmail.com',
+    //     phoneCode: '62',
+    //     phoneNumber: '8585858585',
+    //     origin: 'PT XYZ',
+    //     employee: 'Mr A',
+    //     reason: '',
+    //     gender: '2',
+    //     enabled: false,
+    //     completed: true));
     // items.add(GuestList(false, 'Ayana Dunne', true));
     // checkData();
     // print(visitorList);
     // log(visitorList.toString());
+    getAttendants().then((value) {
+      // print(value.toString());
+      setState(() {});
+    });
+  }
+
+  Future getVisitorDetail() async {
+    var url = Uri.http(apiUrl, '/api/visitor/get-visitor-detail-list');
+    Map<String, String> requestHeader = {
+      'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
+      'Content-Type': 'application/json'
+    };
+    var bodySend = """ 
+      {
+          "Visitors" : [
+              {
+                  "VisitorID" : "VT-4"
+              }
+          ]
+      }
+    """;
+    try {
+      var response =
+          await http.post(url, headers: requestHeader, body: bodySend);
+      var data = json.decode(response.body);
+      detailVisitor = data['Data'][0];
+      print(detailVisitor);
+    } on SocketException catch (e) {
+      print(e);
+    }
+
+    setState(() {});
+  }
+
+  Future getAttendants() async {
+    var listBox = await Hive.openBox('listBox');
+    dynamic attendant =
+        listBox.get('attendants') != "" ? listBox.get('attendants') : "";
+    // attendantList = json.decode(attendants);
+
+    // attendant = json.encode(attendant);
+    print(attendant[1]);
+    for (var element in attendant) {
+      visitorList.add(Visitor(
+        firstName: element['FirstName'],
+        lastName: element['LastName'],
+        completed: element['ApprovementStep'] == 0 ? false : true,
+        enabled: false,
+      ));
+    }
+    // return attendants;
   }
 
   checkData() {
@@ -154,7 +211,7 @@ class _GuestListPageState extends State<GuestListPage> {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => checkData());
+    // WidgetsBinding.instance.addPostFrameCallback((_) => checkData());
     // String selected = "";
     return SafeArea(
       child: Scaffold(
@@ -361,26 +418,49 @@ class _GuestListPageState extends State<GuestListPage> {
                       if (selectedVisitor.isEmpty) {
                         print('empty');
                       } else {
-                        // print(selectedVisitor.toString());
-                        // if (selectedVisitor) {}
-                        // firstNameEmpty = selectedVisitor
-                        //     .every(((element) => element.firstName == ""));
                         selectedVisitor.forEach((element) {
                           // clearVisitorData();
                           if (element.completed == true) {
-                            saveVisitorData(
-                                element.firstName.toString(),
-                                element.lastName.toString(),
-                                element.gender.toString(),
-                                element.email.toString(),
-                                element.phoneCode.toString(),
-                                element.phoneNumber.toString(),
-                                element.origin.toString(),
-                                element.employee.toString(),
-                                element.reason.toString(),
-                                element.completed!);
-                            Navigator.pushNamed(context, '/visitorInfo');
+                            getVisitorDetail().then((value) {
+                              // for (var x in detailVisitor) {
+                              saveVisitorData(
+                                      detailVisitor['FirstName'],
+                                      detailVisitor['LastName'],
+                                      detailVisitor['Gender'],
+                                      detailVisitor['Email'],
+                                      detailVisitor['Phone']
+                                          .toString()
+                                          .substring(1, 3),
+                                      detailVisitor['Phone']
+                                          .toString()
+                                          .substring(3),
+                                      "origin",
+                                      detailVisitor['EmployeeName'],
+                                      detailVisitor['VisitReason'],
+                                      detailVisitor['VisitorPhoto'],
+                                      element.completed!)
+                                  .then((value) {
+                                Navigator.pushNamed(context, '/visitorInfo')
+                                    .then((value) {
+                                  setState(() {});
+                                });
+                              });
+                              // }
+                            });
+                            // saveVisitorData(
+                            //     element.firstName.toString(),
+                            //     element.lastName.toString(),
+                            //     element.gender.toString(),
+                            //     element.email.toString(),
+                            //     element.phoneCode.toString(),
+                            //     element.phoneNumber.toString(),
+                            //     element.origin.toString(),
+                            //     element.employee.toString(),
+                            //     element.reason.toString(),
+                            //     element.completed!);
+
                           } else {
+                            // getVisitorDetail();
                             saveVisitorData(
                                 element.firstName.toString(),
                                 element.lastName.toString(),
@@ -391,14 +471,16 @@ class _GuestListPageState extends State<GuestListPage> {
                                 element.origin.toString(),
                                 element.employee.toString(),
                                 element.reason.toString(),
+                                "",
                                 element.completed!);
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        NewGuestPage(
-                                          isEdit: true,
-                                        )));
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute(
+                            //     builder: (BuildContext context) => NewGuestPage(
+                            //       isEdit: true,
+                            //     ),
+                            //   ),
+                            // );
                           }
                         });
                         print(selectedVisitor.toList());

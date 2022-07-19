@@ -409,6 +409,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                             origin,
                                             employee,
                                             reasonVisit,
+                                            "",
                                             true);
                                         Navigator.pushNamed(
                                             context, '/declaration');

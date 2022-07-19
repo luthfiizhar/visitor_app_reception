@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -26,6 +29,13 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
   String? phoneNumber;
   String? employee;
   String? reason;
+  String? photo = "";
+  Uint8List? photoBase64;
+
+  Uint8List convertBase64Image(String base64String) {
+    return Base64Decoder().convert(base64String.split(',').last);
+  }
+
   Future getDataVisitor() async {
     var box = await Hive.openBox('visitorBox');
     setState(() {
@@ -38,6 +48,7 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
       phoneNumber = box.get('phoneNumber');
       employee = box.get('employee');
       reason = box.get('reason');
+      photo = box.get('photo');
     });
   }
 
@@ -45,7 +56,9 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getDataVisitor();
+    getDataVisitor().then((value) {
+      photoBase64 = Base64Decoder().convert(photo!.split(',').last);
+    });
   }
 
   @override
@@ -78,20 +91,32 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
                   // padding: EdgeInsets.only(top: 50),
                   height: 200,
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        width: 200,
-                        child: Image.asset('assets/avatars/avatar_male.png'),
-                        // child: SvgPicture.asset(
-                        //   'assets/avatars/male_avatar.svg',
-                        //   // fit: BoxFit.cover,
-                        // ),
+                      CircleAvatar(
+                        radius: 100,
+                        backgroundImage: MemoryImage(
+                          photoBase64!,
+                        ),
                       ),
+                      // Container(
+                      //   width: 200,
+                      //   // child: Image.asset('assets/avatars/avatar_male.png'),
+                      //   child: Image.memory(
+                      //     convertBase64Image(photo!),
+                      //     gaplessPlayback: true,
+                      //   ),
+                      //   // child: SvgPicture.asset(
+                      //   //   'assets/avatars/male_avatar.svg',
+                      //   //   // fit: BoxFit.cover,
+                      //   // ),
+                      // ),
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(left: 50),
                           child: Container(
                             child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -103,7 +128,7 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 10),
                                   child: Text(
-                                    gender == '1' ? 'Male' : 'Female',
+                                    gender == 'Male' ? 'Male' : 'Female',
                                     style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.w400),
@@ -210,7 +235,7 @@ class DetailInfoText extends StatelessWidget {
           padding: EdgeInsets.only(top: 10),
           child: Text(
             '$detailInfo',
-            style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
           ),
         )
       ],

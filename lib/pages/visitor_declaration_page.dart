@@ -6,9 +6,14 @@ import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
 import 'package:visitor_app/components/regular_button.dart';
 
-class VisitorDeclarationPage extends StatelessWidget {
+class VisitorDeclarationPage extends StatefulWidget {
   const VisitorDeclarationPage({Key? key}) : super(key: key);
 
+  @override
+  State<VisitorDeclarationPage> createState() => _VisitorDeclarationPageState();
+}
+
+class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -92,7 +97,7 @@ class VisitorDeclarationPage extends StatelessWidget {
                           title: 'Next',
                           // routeName: '',
                           onTap: () {
-                            Navigator.pushNamed(context, '/visitorInfo');
+                            Navigator.pushNamed(context, '/welcome');
                           },
                         )),
                   )

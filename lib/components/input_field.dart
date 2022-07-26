@@ -17,7 +17,7 @@ class InputVisitorField extends StatefulWidget {
       this.onSaved,
       Key? key});
 
-  final TextEditingController controller;
+  TextEditingController controller;
   final String label;
   final double? width;
   final double? height;
@@ -102,7 +102,7 @@ class _InputVisitorFieldState extends State<InputVisitorField> {
               keyboardType: widget.keyboardType,
               cursorColor: onyxBlack,
               // focusNode: widget.focusNode,
-              // controller: widget.controller,
+              controller: widget.controller,
               // onTap: () {
               //   if (widget.focusNode!.hasFocus) {
               //     widget.focusNode!.unfocus();
@@ -135,12 +135,12 @@ class _InputVisitorFieldState extends State<InputVisitorField> {
                 filled: true,
                 errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide(color: eerieBlack, width: 2.5)),
+                    borderSide: BorderSide(color: orangeRed, width: 2.5)),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide:
                         BorderSide(color: Color(0xFF929AAB), width: 2.5)),
-                errorStyle: TextStyle(color: silver, fontSize: 18),
+                errorStyle: TextStyle(color: orangeRed, fontSize: 18),
               ),
               style: TextStyle(
                   fontSize: 24,

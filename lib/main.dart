@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
+import 'package:provider/provider.dart';
+import 'package:visitor_app/constant.dart';
+import 'package:visitor_app/main_model.dart';
 import 'package:visitor_app/pages/guest_list_page.dart';
 import 'package:visitor_app/pages/home_page.dart';
 import 'package:visitor_app/pages/invitation_page.dart';
@@ -11,7 +14,12 @@ import 'package:visitor_app/pages/welcome_guest_page.dart';
 
 void main() async {
   await Hive.initFlutter();
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider<MainModel>(
+      create: (_) => MainModel(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -28,6 +36,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           scaffoldBackgroundColor: Color(0xFFF5F5F5)),
       home: HomePage(),
+      navigatorKey: navKey,
       routes: {
         '/home': (context) => HomePage(),
         '/invite': (context) => InvitationPage(),

@@ -8,12 +8,15 @@ class Visitor {
   String? gender;
   String? reason;
   String? employee;
+  String? visitorId;
+  String? status;
 
   bool? enabled;
   bool? completed;
 
   Visitor(
-      {this.firstName,
+      {this.visitorId,
+      this.firstName,
       this.lastName,
       this.email,
       this.phoneNumber,
@@ -23,8 +26,20 @@ class Visitor {
       this.origin,
       this.reason,
       this.enabled,
+      this.status,
       this.completed});
-
+  Map toJson() => {
+        'VisitorID': visitorId,
+        // 'FirstName': firstName,
+        // 'LastName': lastName,
+        // 'Email': email,
+        // 'PhoneNumber': phoneNumber,
+        // 'PhoneCode': phoneCode,
+        // 'Gender': gender,
+        // 'Employee': employee,
+        // 'Origin': origin,
+        // 'ReasonVisit': reason,
+      };
   @override
   toString() =>
       'firstName: $firstName, lastName: $lastName, email: $email, phoneNumber: $phoneNumber, phoneCode: $phoneCode, gender: $gender, employee:$employee, origin: $origin, reason: $reason, enabled: $enabled, completed: $completed';

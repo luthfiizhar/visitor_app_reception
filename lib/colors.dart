@@ -9,3 +9,5 @@ const Color eerieBlack = const Color(0xFF141414);
 const Color onyxBlack = const Color(0xFF3D3D3D);
 const Color spanishGray = const Color(0xFF8F8F8F);
 const Color silver = const Color(0xFFC2C2C2);
+const Color orangeRed = const Color(0xFFF26529);
+const Color scaffoldBg = const Color(0xFFF5F5F5);

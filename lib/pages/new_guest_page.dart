@@ -7,14 +7,20 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
 import 'package:visitor_app/components/input_field.dart';
 import 'package:visitor_app/components/regular_button.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:visitor_app/constant.dart';
 import 'package:visitor_app/functions/hive_functions.dart';
+import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/keys.dart';
+import 'package:visitor_app/main_model.dart';
+import 'package:http/http.dart' as http;
+import 'package:visitor_app/pages/visitor_info_page.dart';
 
 class NewGuestPage extends StatefulWidget {
   NewGuestPage({Key? key, this.isEdit}) : super(key: key);
@@ -32,8 +38,10 @@ class _NewGuestPageState extends State<NewGuestPage> {
   late String phoneCode;
   late String phoneNumber;
   late String origin;
-  late String reasonVisit = '';
+  late String reasonVisit = '0';
   late String employee = '';
+  List visitReasonList = [];
+  List genderList = [];
 
   TextEditingController _firstName = TextEditingController();
   TextEditingController _lastName = TextEditingController();
@@ -41,6 +49,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
   TextEditingController _phoneNumber = TextEditingController();
   TextEditingController _phoneNumberCode = TextEditingController();
   TextEditingController _origin = TextEditingController();
+  TextEditingController _employee = TextEditingController();
   TextEditingController _test = TextEditingController();
 
   late FocusNode firstNameNode;
@@ -51,6 +60,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
   late FocusNode genderNode;
   late FocusNode originNode;
   late FocusNode reasonNode;
+  late FocusNode employeeNode;
   late FocusNode testNode;
 
   bool dataCompleted = false;
@@ -68,10 +78,6 @@ class _NewGuestPageState extends State<NewGuestPage> {
   String? base64image;
   final picker = ImagePicker();
   File? _image;
-
-  var args;
-
-  // var isnew = ModalRoute.of(context);
 
   Future getImage() async {
     print('getimage');
@@ -95,22 +101,23 @@ class _NewGuestPageState extends State<NewGuestPage> {
 
   Future checkDataVisitor() async {
     var box = await Hive.openBox('visitorBox');
-    setState(() {
-      firstName = box.get('firstName') != "" ? box.get('firstName') : "";
-      lastName = box.get('lastName') != "" ? box.get('lastName') : "";
-      jenisKelamin = box.get('gender') != "" ? box.get('gender') : "1";
-      email = box.get('email') != "" ? box.get('email') : "";
-      origin = box.get('origin') != "" ? box.get('origin') : "1";
-      phoneCode = box.get('phoneCode') != "" ? box.get('phoneCode') : "";
-      phoneNumber = box.get('phoneNumber') != "" ? box.get('phoneNumber') : "";
-      employee = box.get('employee') != "" ? box.get('employee') : "";
-      reasonVisit = box.get('reason') != "" ? box.get('reason') : "";
-      ;
-      dataCompleted = box.get('completed');
 
-      // if (dataCompleted == false) {
-      //   return;
-      // } else {
+    firstName = box.get('firstName') != "" ? box.get('firstName') : "";
+    lastName = box.get('lastName') != "" ? box.get('lastName') : "";
+    jenisKelamin = box.get('gender') != "" ? box.get('gender') : "1";
+    email = box.get('email') != "" ? box.get('email') : "";
+    origin = box.get('origin') != "" ? box.get('origin') : "1";
+    phoneCode = box.get('phoneCode') != "" ? box.get('phoneCode') : "";
+    phoneNumber = box.get('phoneNumber') != "" ? box.get('phoneNumber') : "";
+    employee = box.get('employee') != "" ? box.get('employee') : "";
+    reasonVisit = box.get('reason') != "" ? box.get('reason') : "";
+    dataCompleted = box.get('completed');
+
+    // if (dataCompleted == false) {
+    //   return;
+    // } else {
+    // print('firstName->' + firstName);
+    setState(() {
       _firstName.text = firstName != "" ? firstName : "";
       _lastName.text = lastName != "" ? lastName : "";
       _email.text = email != "" ? email : "";
@@ -120,25 +127,117 @@ class _NewGuestPageState extends State<NewGuestPage> {
     });
   }
 
+  Future getVisitReason() async {
+    var url = Uri.http(apiUrl, '/api/visitor/visit-reason');
+    Map<String, String> requestHeader = {
+      'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
+      'Content-Type': 'application/json'
+    };
+    try {
+      var response = await http.get(url, headers: requestHeader);
+      var data = json.decode(response.body);
+      print(data['Data']);
+      visitReasonList = data['Data'];
+    } on SocketException catch (e) {
+      print(e);
+    }
+
+    setState(() {});
+  }
+
+  Future getGender() async {
+    var url = Uri.http(apiUrl, '/api/visitor/gender-list');
+    Map<String, String> requestHeader = {
+      'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
+      'Content-Type': 'application/json'
+    };
+    try {
+      var response = await http.get(url, headers: requestHeader);
+      var data = json.decode(response.body);
+      print(data['Data']);
+      genderList = data['Data'];
+    } on SocketException catch (e) {
+      print(e);
+    }
+
+    setState(() {});
+  }
+
+  Future saveVisitorForm(
+    String id,
+    int reason,
+    int gender,
+    String origin,
+    String code,
+    String number,
+    String photo,
+  ) async {
+    var url = Uri.http(apiUrl, '/api/visitor/save-visitor-form');
+    Map<String, String> requestHeader = {
+      'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
+      'Content-Type': 'application/json'
+    };
+    var bodySend = """ 
+      {
+            "VisitorID" : "$id",
+            "VisitReason" : $reason,
+            "Gender" : $gender,
+            "CompanyName" : "$origin",
+            "Code" : "$code",
+            "PhoneNumber" : "$number",
+            "Photo" : "data:image/jpeg;base64,$photo"
+
+      }
+    """;
+
+    // print(bodySend);
+    try {
+      var response =
+          await http.post(url, headers: requestHeader, body: bodySend);
+      var data = json.decode(response.body);
+      print(data);
+      return data;
+    } on SocketException catch (e) {
+      print(e);
+    }
+
+    setState(() {});
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   args = ModalRoute.of(context)!.settings.arguments;
-    //   print('args');
-    //   print(args);
-    // });
-    // print(isnew);
+    getVisitReason();
+    getGender();
     if (widget.isEdit == true) {
       print('check Data');
-      checkDataVisitor().then((_) {
-        _formKey.currentState!.validate();
-        setState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        print(Provider.of<MainModel>(context, listen: false).firstName);
+        setState(() {
+          _firstName.text =
+              Provider.of<MainModel>(context, listen: false).firstName;
+          _lastName.text =
+              Provider.of<MainModel>(context, listen: false).lastName;
+          _email.text = Provider.of<MainModel>(context, listen: false).email;
+          _origin.text = Provider.of<MainModel>(context, listen: false).origin;
+          _employee.text =
+              Provider.of<MainModel>(context, listen: false).employee;
+          // var list = Provider.of<MainModel>(context, listen: false)
+          //     .listSelectedVisitor;
+          // print(list);
+          // reasonVisit =
+          //     Provider.of<MainModel>(context, listen: false).reason;
+          _formKey.currentState!.validate();
+        });
       });
+      // checkDataVisitor().then((_) {
+
+      //   setState(() {});
+      // });
     } else {
       print('no check Data');
-      clearVisitorData();
+      // clearVisitorData();
     }
     // jenisKelamin = '';
     _phoneNumberCode.text = '62';
@@ -148,6 +247,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
     phoneCodeNode = FocusNode();
     phoneNumberNode = FocusNode();
     originNode = FocusNode();
+    employeeNode = FocusNode();
     testNode = FocusNode();
     testNode.addListener(() {
       setState(() {});
@@ -173,6 +273,9 @@ class _NewGuestPageState extends State<NewGuestPage> {
       setState(() {});
     });
     phoneNumberNode.addListener(() {
+      setState(() {});
+    });
+    employeeNode.addListener(() {
       setState(() {});
     });
   }
@@ -207,6 +310,9 @@ class _NewGuestPageState extends State<NewGuestPage> {
     phoneCodeNode.removeListener(() {
       setState(() {});
     });
+    employeeNode.removeListener(() {
+      setState(() {});
+    });
 
     firstNameNode.dispose();
     lastNameNode.dispose();
@@ -214,6 +320,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
     emailNode.dispose();
     phoneNumberNode.dispose();
     phoneCodeNode.dispose();
+    employeeNode.dispose();
 
     _firstName.dispose();
     _lastName.dispose();
@@ -221,251 +328,331 @@ class _NewGuestPageState extends State<NewGuestPage> {
     _origin.dispose();
     _phoneNumber.dispose();
     _phoneNumberCode.dispose();
+    _employee.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     bool onError = false;
-    return SafeArea(
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(75),
-          child: CustAppBar(),
-        ),
-        body: SingleChildScrollView(
-          child: Center(
-              child: Container(
-            padding: EdgeInsets.only(top: 20, left: 100, right: 100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Visitor Data',
-                      style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w600,
-                          color: eerieBlack),
-                    ),
-                  ],
-                ),
-                Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Please fill in your data here',
-                          style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w400,
-                              color: onyxBlack),
-                        ),
-                      ],
-                    )),
-                Padding(
-                  padding: EdgeInsets.only(top: 50),
-                  child: Container(
-                    // duration: Duration(seconds: 5),
-                    // margin: const EdgeInsets.all(16),
-
-                    child: Form(
-                      key: _formKey,
-                      // autovalidateMode: AutovalidateMode.onUserInteraction,
-                      child: Column(
+    return Consumer<MainModel>(builder: (context, model, child) {
+      return SafeArea(
+        child: Scaffold(
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(75),
+            child: CustAppBar(),
+          ),
+          body: SingleChildScrollView(
+            child: Center(
+                child: Container(
+              padding: EdgeInsets.only(top: 20, left: 100, right: 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Visitor Data',
+                        style: TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w600,
+                            color: eerieBlack),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Row(
                         children: [
-                          // InputVisitorField(
-                          //   controller: _test,
-                          //   label: 'Test',
-                          //   focusNode: testNode,
-                          // ),
-                          // firstNameField(),
-                          InputVisitorField(
-                            controller: _firstName,
-                            label: 'First Name',
-                            focusNode: firstNameNode,
-                            keyboardType: TextInputType.text,
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                setState(() {
-                                  onError = true;
-                                });
-                                return 'This field is required';
-                              } else {
-                                setState(() {
-                                  onError = false;
-                                });
-                              }
-                            },
-                            onSaved: (value) {
-                              setState(() {
-                                firstName = _firstName.text;
-                              });
-                            },
+                          Text(
+                            'Please fill in your data here',
+                            style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w400,
+                                color: onyxBlack),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 30.0),
-                            // child: lastNameField(),
-                            child: InputVisitorField(
-                              controller: _lastName,
-                              label: 'Last Name',
+                        ],
+                      )),
+                  Padding(
+                    padding: EdgeInsets.only(top: 50),
+                    child: Container(
+                      // duration: Duration(seconds: 5),
+                      // margin: const EdgeInsets.all(16),
+
+                      child: Form(
+                        key: _formKey,
+                        // autovalidateMode: AutovalidateMode.onUserInteraction,
+                        child: Column(
+                          children: [
+                            // InputVisitorField(
+                            //   controller: _test,
+                            //   label: 'Test',
+                            //   focusNode: testNode,
+                            // ),
+                            // firstNameField(),
+                            // TextFormField(
+                            //   controller: _firstName,
+                            // ),
+                            InputVisitorField(
+                              controller: _firstName,
+                              label: 'First Name',
+                              focusNode: firstNameNode,
                               keyboardType: TextInputType.text,
-                              focusNode: lastNameNode,
-                              validator: (value) => value!.isEmpty
-                                  ? 'This field is required'
-                                  : null,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  setState(() {
+                                    onError = true;
+                                  });
+                                  return 'This field is required';
+                                } else {
+                                  setState(() {
+                                    onError = false;
+                                  });
+                                }
+                              },
                               onSaved: (value) {
                                 setState(() {
-                                  lastName = _lastName.text;
+                                  firstName = _firstName.text;
                                 });
                               },
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 30.0),
-                            child: genderField(),
-                            // child: InputVisitorField(controller: _lastName,label: 'Las',),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 30.0),
-                            // child: emailField(),
-                            child: InputVisitorField(
-                                controller: _email,
-                                label: 'Email',
-                                focusNode: emailNode,
-                                keyboardType: TextInputType.emailAddress,
+                            Padding(
+                              padding: const EdgeInsets.only(top: 30.0),
+                              // child: lastNameField(),
+                              child: InputVisitorField(
+                                controller: _lastName,
+                                label: 'Last Name',
+                                keyboardType: TextInputType.text,
+                                focusNode: lastNameNode,
+                                validator: (value) => value!.isEmpty
+                                    ? 'This field is required'
+                                    : null,
                                 onSaved: (value) {
                                   setState(() {
-                                    email = _email.text;
+                                    lastName = _lastName.text;
                                   });
-                                }),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 30.0),
-                            child: phoneNoField(),
-                          ),
-                          Padding(
-                              padding: const EdgeInsets.only(top: 30.0),
-                              child: noteContainer()),
-
-                          Padding(
-                            padding: const EdgeInsets.only(top: 50),
-                            // child: originField(),
-                            child: InputVisitorField(
-                              controller: _origin,
-                              label: 'Origin Company',
-                              focusNode: originNode,
-                              keyboardType: TextInputType.text,
-                              onSaved: (value) {
-                                setState(() {
-                                  origin = _origin.text;
-                                });
-                              },
+                                },
+                              ),
                             ),
-                          ),
-                          Padding(
+                            Padding(
                               padding: const EdgeInsets.only(top: 30.0),
-                              child: reasonField()),
-                          Padding(
+                              child: genderField(),
+                              // child: InputVisitorField(controller: _lastName,label: 'Las',),
+                            ),
+                            Padding(
                               padding: const EdgeInsets.only(top: 30.0),
-                              child: employeeField()),
-                          Padding(
+                              // child: emailField(),
+                              child: InputVisitorField(
+                                  controller: _email,
+                                  label: 'Email',
+                                  focusNode: emailNode,
+                                  keyboardType: TextInputType.emailAddress,
+                                  onSaved: (value) {
+                                    setState(() {
+                                      email = _email.text;
+                                    });
+                                  }),
+                            ),
+                            Padding(
                               padding: const EdgeInsets.only(top: 30.0),
-                              child: photoField()),
-                          Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 100.0, bottom: 50),
-                              child: SizedBox(
-                                width: 600,
-                                height: 80,
-                                child: RegularButton(
+                              child: phoneNoField(),
+                            ),
+                            Padding(
+                                padding: const EdgeInsets.only(top: 30.0),
+                                child: noteContainer()),
+
+                            Padding(
+                              padding: const EdgeInsets.only(top: 50),
+                              // child: originField(),
+                              child: InputVisitorField(
+                                controller: _origin,
+                                label: 'Origin Company',
+                                focusNode: originNode,
+                                keyboardType: TextInputType.text,
+                                validator: (value) => value == ""
+                                    ? "This Field is Required"
+                                    : null,
+                                onSaved: (value) {
+                                  setState(() {
+                                    origin = _origin.text;
+                                  });
+                                },
+                              ),
+                            ),
+                            Padding(
+                                padding: const EdgeInsets.only(top: 30.0),
+                                child: reasonField()),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 30.0),
+                              child: InputVisitorField(
+                                controller: _employee,
+                                label: 'Meeting with',
+                                focusNode: employeeNode,
+                                keyboardType: TextInputType.name,
+                                onSaved: (value) {
+                                  setState(() {
+                                    employee = value!;
+                                  });
+                                },
+                                validator: (value) => value == ""
+                                    ? "This field is required"
+                                    : null,
+                              ),
+                            ),
+                            Padding(
+                                padding: const EdgeInsets.only(top: 30.0),
+                                child: photoField()),
+                            Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 100.0, bottom: 50),
+                                child: SizedBox(
                                   width: 600,
                                   height: 80,
-                                  routeName: '',
-                                  title: 'Next',
-                                  onTap: () {
-                                    if (_formKey.currentState!.validate()) {
-                                      _formKey.currentState!.save();
-                                      print(firstName);
-                                      print(lastName);
-                                      print(email);
-                                      print(phoneNumber);
+                                  child: RegularButton(
+                                    width: 600,
+                                    height: 80,
+                                    routeName: '',
+                                    title: 'Next',
+                                    onTap: () {
+                                      if (_formKey.currentState!.validate()) {
+                                        _formKey.currentState!.save();
+                                        // print(firstName);
+                                        // print(lastName);
+                                        // print(email);
+                                        model.setFirstName(firstName);
+                                        model.setLastName(lastName);
+                                        model.setEmail(email);
+                                        model.setPhoto(base64image!);
+                                        model
+                                            .setGender(int.parse(jenisKelamin));
+                                        model.setEmployee(employee);
+                                        model.setOrigin(origin);
+                                        model.setReason(int.parse(reasonVisit));
+                                        model.setPhoneCode(phoneCode);
+                                        model.setPhoneNumber(phoneNumber);
 
-                                      if (_image == null) {
-                                        setState(() {
-                                          emptyPhoto = true;
-                                        });
+                                        // model.set
+                                        print(model.visitorId);
+                                        print(base64image);
+                                        print(origin);
+                                        print(jenisKelamin);
+                                        print(reasonVisit);
+                                        print(phoneCode);
+                                        print(phoneNumber);
+                                        print("status page->" +
+                                            model.isLastVisitor.toString());
+                                        print("status edit->" +
+                                            model.isEdit.toString());
+                                        // Navigator.pushNamed(
+                                        //     context, '/visitorInfo');
+                                        if (model.isEdit == true) {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  VisitorInfoPage(
+                                                visitorId: model.visitorId,
+                                                firstName: model.firstName,
+                                                lastName: model.lastName,
+                                                email: model.email,
+                                                gender: model.gender,
+                                                visitReason: model.reason,
+                                                employee: model.employee,
+                                                visitDate: model.visitDate,
+                                                origin: model.origin,
+                                                photo: model.photo,
+                                                phoneCode: model.phoneCode,
+                                                phoneNumber: model.phoneNumber,
+                                              ),
+                                            ),
+                                          );
+                                          print('Edit');
+                                        } else {
+                                          print('NewGuest');
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  VisitorInfoPage(
+                                                visitorId: "",
+                                                firstName: model.firstName,
+                                                lastName: model.lastName,
+                                                email: model.email,
+                                                gender: model.gender,
+                                                visitReason: model.reason,
+                                                employee: model.employee,
+                                                visitDate: model.visitDate,
+                                                origin: model.origin,
+                                                photo: model.photo,
+                                                phoneCode: model.phoneCode,
+                                                phoneNumber: model.phoneNumber,
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        // print(model.listSelectedVisitor);
+
+                                        // saveVisitorForm(
+                                        //         model.visitorId,
+                                        //         int.parse(reasonVisit),
+                                        //         int.parse(jenisKelamin),
+                                        //         origin,
+                                        //         phoneCode,
+                                        //         phoneNumber,
+                                        //         base64image!)
+                                        //     .then((value) {
+
+                                        // });
+                                        // ScaffoldMessenger.of(context)
+                                        //     .showSnackBar(
+                                        //   const SnackBar(
+                                        //       content: Text('Processing Data')),
+                                        // );
+
                                       } else {
-                                        setState(() {
-                                          emptyPhoto = false;
-                                        });
-                                        saveVisitorData(
-                                            firstName,
-                                            lastName,
-                                            jenisKelamin,
-                                            email,
-                                            phoneCode,
-                                            phoneNumber,
-                                            origin,
-                                            employee,
-                                            reasonVisit,
-                                            "",
-                                            true);
-                                        Navigator.pushNamed(
-                                            context, '/declaration');
+                                        setState(() {});
                                       }
-
-                                      // ScaffoldMessenger.of(context)
-                                      //     .showSnackBar(
-                                      //   const SnackBar(
-                                      //       content: Text('Processing Data')),
-                                      // );
-
-                                    } else {
-                                      setState(() {});
-                                    }
-                                  },
-                                ),
-                              )),
-                          // Container(
-                          //   decoration: !focusedFirstName
-                          //       ? null
-                          //       : BoxDecoration(
-                          //           color: Color(0xFFF5F5F5),
-                          //           borderRadius: BorderRadius.circular(15),
-                          //           boxShadow: [
-                          //               BoxShadow(
-                          //                   blurRadius: 0,
-                          //                   offset: Offset(0.0, 5.0),
-                          //                   color: Color(0xFFA80038))
-                          //             ]),
-                          //   child: InputVisitorField(
-                          //     controller: _firstName,
-                          //     label: 'First Name',
-                          //     focusNode: firstNameNode,
-                          //     focus: focusedFirstName,
-                          //   ),
-                          // ),
-                          // Padding(
-                          //   padding: const EdgeInsets.only(top: 30),
-                          //   child: InputVisitorField(
-                          //     controller: _lastName,
-                          //     label: 'Last Name',
-                          //     // focusNode: _node,
-                          //     // focus: _focused,
-                          //   ),
-                          // ),
-                        ],
+                                    },
+                                  ),
+                                )),
+                            // Container(
+                            //   decoration: !focusedFirstName
+                            //       ? null
+                            //       : BoxDecoration(
+                            //           color: Color(0xFFF5F5F5),
+                            //           borderRadius: BorderRadius.circular(15),
+                            //           boxShadow: [
+                            //               BoxShadow(
+                            //                   blurRadius: 0,
+                            //                   offset: Offset(0.0, 5.0),
+                            //                   color: Color(0xFFA80038))
+                            //             ]),
+                            //   child: InputVisitorField(
+                            //     controller: _firstName,
+                            //     label: 'First Name',
+                            //     focusNode: firstNameNode,
+                            //     focus: focusedFirstName,
+                            //   ),
+                            // ),
+                            // Padding(
+                            //   padding: const EdgeInsets.only(top: 30),
+                            //   child: InputVisitorField(
+                            //     controller: _lastName,
+                            //     label: 'Last Name',
+                            //     // focusNode: _node,
+                            //     // focus: _focused,
+                            //   ),
+                            // ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          )),
+                ],
+              ),
+            )),
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget genderField() {
@@ -504,36 +691,18 @@ class _NewGuestPageState extends State<NewGuestPage> {
                     ),
                     iconSize: 36,
                     itemHeight: 50,
-                    items: [
-                      DropdownMenuItem(
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 10, top: 0),
-                          child: Text('Male'),
-                        ),
-                        value: '1',
-                      ),
-                      // DropdownMenuItem(
-                      //   enabled: false,
-                      //   child: Divider(
-                      //     color: redRose,
-                      //   ),
-                      // ),
-                      DropdownMenuItem(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            left: 10,
-                          ),
-                          child: Text('Female'),
-                        ),
-                        value: '2',
-                      )
-                    ],
+                    items: genderList.map((e) {
+                      return DropdownMenuItem(
+                        child: Text(e['Name']),
+                        value: e['Value'],
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       setState(() {
                         jenisKelamin = value.toString();
                       });
                     },
-                    value: jenisKelamin,
+                    value: int.parse(jenisKelamin),
                     decoration: InputDecoration(
                         // filled: true,
                         isDense: true,
@@ -583,105 +752,19 @@ class _NewGuestPageState extends State<NewGuestPage> {
           ],
         ),
         Padding(
-          // height: 70,
-          // decoration: !lastNameNode.hasFocus
-          //     ? null
-          //     : BoxDecoration(
-          //         color: Color(0xFFF5F5F5),
-          //         borderRadius: BorderRadius.circular(15),
-          //         boxShadow: [
-          //             BoxShadow(
-          //                 blurRadius: 0,
-          //                 offset: Offset(0.0, 5.0),
-          //                 color: Color(0xFFA80038))
-          //           ]),
           padding: const EdgeInsets.only(top: 15),
           child: Row(
             children: [
-              // phoneCodeNode.hasFocus
-              //     ? Container(
-              //         width: 120,
-              //         decoration: BoxDecoration(
-              //             borderRadius: BorderRadius.circular(15),
-              //             color: graySand,
-              //             boxShadow: [
-              //               BoxShadow(
-              //                   blurRadius: 0,
-              //                   offset: Offset(0.0, 5.0),
-              //                   color: Color(0xFFA80038))
-              //             ]),
-              //         child: phoneCodeInput(),
-              //       )
-              // :
               Container(
                   padding: EdgeInsets.zero,
                   width: 120,
-                  height: 70,
-                  // decoration: BoxDecoration(
-                  //     border: Border.all(color: grayStone, width: 2.5),
-                  //     borderRadius: BorderRadius.circular(15),
-                  //     color: graySand),
                   child: phoneCodeInput()),
-              // Container(
-              //   width: 120,
-              //   child: TextFormField(
-              //     controller: _phoneNumberCode,
-              //     enabled: false,
-              //     decoration: InputDecoration(
-              //         // filled: true,
-              //         contentPadding: EdgeInsets.fromLTRB(30, 20, 0, 20),
-              //         disabledBorder: OutlineInputBorder(
-              //             borderRadius: BorderRadius.circular(15),
-              //             borderSide:
-              //                 BorderSide(color: Color(0xFF929AAB), width: 2.5)),
-              //         focusColor: Color(0xFFA80038),
-              //         focusedBorder: OutlineInputBorder(
-              //             borderRadius: BorderRadius.circular(15),
-              //             borderSide:
-              //                 BorderSide(color: Color(0xFFA80038), width: 2.5)),
-              //         enabledBorder: OutlineInputBorder(
-              //             borderRadius: BorderRadius.circular(15),
-              //             borderSide:
-              //                 BorderSide(color: Color(0xFF929AAB), width: 2.5)),
-              //         fillColor: graySand,
-              //         filled: true,
-              //         border: OutlineInputBorder(
-              //             borderRadius: BorderRadius.circular(15),
-              //             borderSide: BorderSide(
-              //                 color: Color(0xFF929AAB), width: 2.5))),
-              //     style: GoogleFonts.workSans(
-              //         textStyle: TextStyle(
-              //             fontSize: 24,
-              //             fontWeight: FontWeight.w400,
-              //             color: Color(0xFFA80038))),
-              //   ),
-              // ),
-              // phoneNumberNode.hasFocus
-              //     ?
-              // Container(
-              //   padding: const EdgeInsets.only(left: 20),
-              //   width: 250,
-              //   height: 70,
-              //   child: Container(
-              //       decoration: BoxDecoration(
-              //           border: Border.all(color: grayStone, width: 2.5),
-              //           borderRadius: BorderRadius.circular(15),
-              //           color: graySand,
-              //           boxShadow: [
-              //             BoxShadow(
-              //                 blurRadius: 0,
-              //                 offset: Offset(0.0, 5.0),
-              //                 color: Color(0xFFA80038))
-              //           ]),
-              //       child: phoneNumberInput()),
-              // )
-              // :
               Padding(
                 padding: const EdgeInsets.only(left: 20),
                 child: Container(
                   padding: EdgeInsets.zero,
                   width: 250,
-                  height: 70,
+                  // height: 70,
                   child: phoneNumberInput(),
                 ),
               ),
@@ -707,12 +790,13 @@ class _NewGuestPageState extends State<NewGuestPage> {
       cursorColor: eerieBlack,
       decoration: InputDecoration(
         isDense: true,
+        isCollapsed: true,
         contentPadding: EdgeInsets.only(
-            top: 35,
+            top: 25,
             left: 30,
             right: 30,
             bottom: 25), //EdgeInsets.fromLTRB(30, 20, 0, 20),
-        isCollapsed: true,
+
         focusColor: eerieBlack,
         focusedErrorBorder: UnderlineInputBorder(
             borderRadius: BorderRadius.circular(15),
@@ -730,13 +814,11 @@ class _NewGuestPageState extends State<NewGuestPage> {
         filled: true,
         errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
-            borderSide: BorderSide(color: eerieBlack, width: 2.5)),
+            borderSide: BorderSide(color: orangeRed, width: 2.5)),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide(color: Color(0xFF929AAB), width: 2.5)),
-        errorStyle: phoneNumberNode.hasFocus
-            ? TextStyle(fontSize: 0, height: 0)
-            : TextStyle(color: silver, fontSize: 18),
+        errorStyle: TextStyle(color: orangeRed, fontSize: 18),
       ),
       style: TextStyle(
           fontSize: 24, fontWeight: FontWeight.w400, color: Color(0xFF393E46)),
@@ -746,18 +828,6 @@ class _NewGuestPageState extends State<NewGuestPage> {
   Widget phoneCodeInput() {
     return Row(
       children: [
-        // Padding(
-        //   padding: const EdgeInsets.only(left: 20),
-        //   child: Text(
-        //     '+',
-        //     style: GoogleFonts.workSans(
-        //         textStyle: TextStyle(
-        //             fontSize: 24,
-        //             fontWeight: FontWeight.w400,
-        //             color: Color(0xFFA80038))),
-        //   ),
-        // ),
-
         Expanded(
           child: TextFormField(
             cursorColor: redRose,
@@ -776,16 +846,19 @@ class _NewGuestPageState extends State<NewGuestPage> {
             keyboardType: TextInputType.number,
             // textAlignVertical: TextAlignVertical.bottom,
             decoration: InputDecoration(
-              prefixIcon: Icon(
-                Icons.add,
-                size: 24,
-                color: eerieBlack,
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: Icon(
+                  Icons.add,
+                  size: 24,
+                  color: eerieBlack,
+                ),
               ),
               prefixIconColor: eerieBlack,
               // prefixIconConstraints: BoxConstraints.loose(Size.infinite),
               isDense: true,
               // alignLabelWithHint: true,
-              contentPadding: EdgeInsets.only(top: 35, left: 15, bottom: 25),
+              contentPadding: EdgeInsets.only(top: 25, left: 15, bottom: 25),
               isCollapsed: true,
               focusColor: eerieBlack,
               focusedErrorBorder: UnderlineInputBorder(
@@ -804,13 +877,11 @@ class _NewGuestPageState extends State<NewGuestPage> {
               filled: true,
               errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(color: eerieBlack, width: 2.5)),
+                  borderSide: BorderSide(color: orangeRed, width: 2.5)),
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(15),
                   borderSide: BorderSide(color: Color(0xFF929AAB), width: 2.5)),
-              errorStyle: phoneNumberNode.hasFocus
-                  ? TextStyle(fontSize: 0, height: 0)
-                  : TextStyle(color: silver, fontSize: 18),
+              errorStyle: TextStyle(color: orangeRed, fontSize: 18),
             ),
             style: TextStyle(
                 fontSize: 24, fontWeight: FontWeight.w400, color: eerieBlack),
@@ -890,31 +961,18 @@ class _NewGuestPageState extends State<NewGuestPage> {
                       ),
                     ),
                     iconSize: 36,
-                    items: [
-                      DropdownMenuItem(
-                        child: Text('Please Choose'),
-                        value: '',
-                        enabled: false,
-                      ),
-                      DropdownMenuItem(
-                        child: Text('Business'),
-                        value: '1',
-                      ),
-                      DropdownMenuItem(
-                        child: Text('Training'),
-                        value: '2',
-                      ),
-                      DropdownMenuItem(
-                        child: Text('Visit'),
-                        value: '3',
-                      )
-                    ],
+                    items: visitReasonList.map((e) {
+                      return DropdownMenuItem(
+                        child: Text(e['Name']),
+                        value: e['Value'],
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       setState(() {
                         reasonVisit = value.toString();
                       });
                     },
-                    value: reasonVisit,
+                    value: int.parse(reasonVisit),
                     decoration: InputDecoration(
                         // filled: true,
                         contentPadding: EdgeInsets.fromLTRB(30, 20, 0, 20),

@@ -7,6 +7,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
@@ -319,21 +320,25 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
                             // Navigator.pushNamed(context, '/welcome');
                           }
                         } else {
-                          onSiteCheckin(
-                                  widget.firstName!,
-                                  widget.lastName!,
-                                  widget.email!,
-                                  widget.visitReason!,
-                                  widget.gender!,
-                                  widget.origin!,
-                                  widget.phoneCode!,
-                                  widget.phoneNumber!,
-                                  widget.photo!)
-                              .then((value) {
-                            if (value['Success'] == '200') {
-                              Navigator.of(context).pushNamed('/declaration');
-                            }
-                          });
+                          // onSiteCheckin(
+                          //         widget.firstName!,
+                          //         widget.lastName!,
+                          //         widget.email!,
+                          //         widget.visitReason!,
+                          //         widget.gender!,
+                          //         widget.origin!,
+                          //         widget.phoneCode!,
+                          //         widget.phoneNumber!,
+                          //         widget.photo!)
+                          //     .then((value) {
+                          // if (value['Status'] == '200') {
+                          String formattedDate =
+                              DateFormat('d MMMM yyyy').format(DateTime.now());
+                          model.setVisitDate(formattedDate);
+                          print(model.visitDate);
+                          Navigator.of(context).pushNamed('/declaration');
+                          //   }
+                          // });
                         }
                       },
                     ),

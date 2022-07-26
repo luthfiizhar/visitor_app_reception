@@ -42,10 +42,11 @@ class _InvitationPageState extends State<InvitationPage> {
   TextEditingController _pinCode = TextEditingController();
 
   Future getVisitorListByInviteCode() async {
-    var url = Uri.http(apiUrl, '/api/visitor/get-visitor-invitation');
+    var url = Uri.https(apiUrl,
+        '/VisitorManagementBackend/public/api/visitor/get-visitor-invitation');
     Map<String, String> requestHeader = {
       'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
     var bodySend = """ 
       {

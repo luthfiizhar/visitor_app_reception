@@ -7,7 +7,8 @@ import 'package:visitor_app/main_model.dart';
 
 Future getVisitorState(dynamic list, int index, MainModel model) async {
   print(list);
-  var url = Uri.http(apiUrl, '/api/visitor/get-visitor-state');
+  var url = Uri.https(
+      apiUrl, '/VisitorManagementBackend/public/api/visitor/get-visitor-state');
   Map<String, String> requestHeader = {
     'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
     'Content-Type': 'application/json'
@@ -48,7 +49,8 @@ Future saveVisitorForm(
   String photo,
 ) async {
   print('savevisitorform');
-  var url = Uri.http(apiUrl, '/api/visitor/visitor-form-tab');
+  var url = Uri.https(
+      apiUrl, '/VisitorManagementBackend/public/api/visitor/visitor-form-tab');
   Map<String, String> requestHeader = {
     'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
     'Content-Type': 'application/json'
@@ -91,7 +93,8 @@ Future onSiteCheckin(
   String number,
   String photo,
 ) async {
-  var url = Uri.http(apiUrl, '/api/visitor/add-visitor-onsite');
+  var url = Uri.https(apiUrl,
+      '/VisitorManagementBackend/public/api/visitor/add-visitor-onsite');
   Map<String, String> requestHeader = {
     'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
     'Content-Type': 'application/json'
@@ -124,7 +127,8 @@ Future onSiteCheckin(
 }
 
 Future confirmAttendants(String listAttendant) async {
-  var url = Uri.http(apiUrl, '/api/visitor/confirm-visitors-multiple');
+  var url = Uri.https(apiUrl,
+      '/VisitorManagementBackend/public/api/visitor/confirm-visitors-multiple');
   Map<String, String> requestHeader = {
     'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
     'Content-Type': 'application/json'

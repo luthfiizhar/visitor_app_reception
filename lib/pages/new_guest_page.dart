@@ -7,6 +7,7 @@ import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
@@ -128,7 +129,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
   }
 
   Future getVisitReason() async {
-    var url = Uri.http(apiUrl, '/api/visitor/visit-reason');
+    var url = Uri.https(
+        apiUrl, '/VisitorManagementBackend/public/api/visitor/visit-reason');
     Map<String, String> requestHeader = {
       'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
       'Content-Type': 'application/json'
@@ -146,7 +148,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
   }
 
   Future getGender() async {
-    var url = Uri.http(apiUrl, '/api/visitor/gender-list');
+    var url = Uri.https(
+        apiUrl, '/VisitorManagementBackend/public/api/visitor/gender-list');
     Map<String, String> requestHeader = {
       'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
       'Content-Type': 'application/json'
@@ -172,7 +175,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
     String number,
     String photo,
   ) async {
-    var url = Uri.http(apiUrl, '/api/visitor/save-visitor-form');
+    var url = Uri.https(apiUrl,
+        '/VisitorManagementBackend/public/api/visitor/save-visitor-form');
     Map<String, String> requestHeader = {
       'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
       'Content-Type': 'application/json'
@@ -567,6 +571,11 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                           print('Edit');
                                         } else {
                                           print('NewGuest');
+                                          String formattedDate =
+                                              DateFormat('d MMMM yyyy')
+                                                  .format(DateTime.now());
+                                          model.setVisitDate(formattedDate);
+                                          print(model.visitDate);
                                           Navigator.of(context).push(
                                             MaterialPageRoute(
                                               builder: (context) =>

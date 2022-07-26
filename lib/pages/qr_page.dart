@@ -1,11 +1,18 @@
+import 'dart:convert';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
+import 'package:visitor_app/constant.dart';
+import 'package:visitor_app/main_model.dart';
+import 'package:http/http.dart' as http;
 
 class QrCodePage extends StatefulWidget {
   const QrCodePage({Key? key}) : super(key: key);
@@ -65,6 +72,41 @@ class _QrCodePageState extends State<QrCodePage> {
     });
   }
 
+  Future getVisitorListByInviteCode() async {
+    var url = Uri.http(apiUrl, '/api/visitor/get-visitor-invitation');
+    Map<String, String> requestHeader = {
+      'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
+      'Content-Type': 'application/json'
+    };
+    var bodySend = """ 
+      {
+          "Code" : "${result!.code}"
+      }
+    """;
+    var response = await http.post(url, headers: requestHeader, body: bodySend);
+    var data = json.decode(response.body);
+    debugPrint(data.toString());
+    if (data['Status'] == "200") {
+      var listBox = await Hive.openBox('listBox');
+      listBox.put(
+          'attendants',
+          data['Data']['Attendants'] != null
+              ? data['Data']['Attendants']
+              : null);
+    }
+    return data;
+  }
+
+  Future checkBarcode(MainModel model) async {
+    getVisitorListByInviteCode().then((value) {
+      debugPrint(value['Data'].toString());
+      model.setInviteCode(result!.code.toString().toUpperCase());
+      model.setEmployee(value['Data']['Employee']);
+      model.setVisitDate(value['Data']['Date']);
+      Navigator.pushNamed(context, '/guestList');
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
@@ -74,38 +116,40 @@ class _QrCodePageState extends State<QrCodePage> {
     // if (!_isReady) {
     //   return Container();
     // }
-    return SafeArea(
-      child: Scaffold(
-        appBar: PreferredSize(
-            preferredSize: Size.fromHeight(100), child: CustAppBar()),
-        body: Column(
-          children: <Widget>[
-            Expanded(
-              flex: 5,
-              child: QRView(
-                key: qrKey,
-                onQRViewCreated: _onQRViewCreated,
-                overlay: QrScannerOverlayShape(
-                    borderColor: silver,
-                    borderRadius: 10,
-                    borderLength: 30,
-                    borderWidth: 10,
-                    cutOutSize: scanArea),
+    return Consumer<MainModel>(builder: (context, model, child) {
+      return SafeArea(
+        child: Scaffold(
+          appBar: PreferredSize(
+              preferredSize: Size.fromHeight(100), child: CustAppBar()),
+          body: Column(
+            children: <Widget>[
+              Expanded(
+                flex: 5,
+                child: QRView(
+                  key: qrKey,
+                  onQRViewCreated: _onQRViewCreated,
+                  overlay: QrScannerOverlayShape(
+                      borderColor: silver,
+                      borderRadius: 10,
+                      borderLength: 30,
+                      borderWidth: 10,
+                      cutOutSize: scanArea),
+                ),
               ),
-            ),
-            Expanded(
-              flex: 1,
-              child: Center(
-                child: (result != null)
-                    ? Text(
-                        'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
-                    : Text('Scan a code'),
-              ),
-            )
-          ],
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: (result != null)
+                      ? Text(
+                          'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
+                      : Text('Scan a code'),
+                ),
+              )
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
     // Scaffold(
     // appBar: PreferredSize(
     //   preferredSize: Size.fromHeight(100),

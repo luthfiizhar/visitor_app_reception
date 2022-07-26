@@ -92,27 +92,55 @@ class WelcomeGuestPage extends StatelessWidget {
                             title: 'OK',
                             onTap: () {
                               print(model.listSelectedVisitor);
-                              confirmAttendants(model.listSelectedVisitor)
-                                  .then((value) {
-                                if (value['Status'] == '200') {
-                                  clearVisitorData();
-                                  model.resetAll();
-                                  notifDialog(context, true).then((value) {
-                                    Navigator.of(context)
-                                        .pushNamedAndRemoveUntil('/home',
-                                            (Route<dynamic> route) => false);
-                                  });
-                                }
-                                if (value['Status'] == '400') {
-                                  clearVisitorData();
-                                  model.resetAll();
-                                  notifDialog(context, false).then((value) {
-                                    Navigator.of(context)
-                                        .pushNamedAndRemoveUntil('/home',
-                                            (Route<dynamic> route) => false);
-                                  });
-                                }
-                              });
+                              if (model.isEdit) {
+                                confirmAttendants(model.listSelectedVisitor)
+                                    .then((value) {
+                                  if (value['Status'] == '200') {
+                                    clearVisitorData();
+                                    model.resetAll();
+                                    notifDialog(context, true).then((value) {
+                                      Navigator.of(context)
+                                          .pushNamedAndRemoveUntil('/home',
+                                              (Route<dynamic> route) => false);
+                                    });
+                                  }
+                                  if (value['Status'] == '400') {
+                                    clearVisitorData();
+                                    model.resetAll();
+                                    notifDialog(context, false).then((value) {
+                                      Navigator.of(context)
+                                          .pushNamedAndRemoveUntil('/home',
+                                              (Route<dynamic> route) => false);
+                                    });
+                                  }
+                                });
+                              } else {
+                                onSiteCheckin(
+                                        model.firstName,
+                                        model.lastName,
+                                        model.email,
+                                        model.reason,
+                                        model.gender,
+                                        model.origin,
+                                        model.phoneCode,
+                                        model.phoneNumber,
+                                        model.photo)
+                                    .then((value) {
+                                  if (value['Status'] == '200') {
+                                    notifDialog(context, true).then((value) {
+                                      Navigator.of(context)
+                                          .pushNamedAndRemoveUntil('/home',
+                                              (Route<dynamic> route) => false);
+                                    });
+                                  } else {
+                                    notifDialog(context, true).then((value) {
+                                      Navigator.of(context)
+                                          .pushNamedAndRemoveUntil('/home',
+                                              (Route<dynamic> route) => false);
+                                    });
+                                  }
+                                });
+                              }
                             },
                           )),
                     )

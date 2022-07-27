@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                                         children: [
                                           RichText(
                                             text: TextSpan(
-                                              text: 'Welcome To ',
+                                              text: 'Welcome to ',
                                               style: TextStyle(
                                                   letterSpacing: 1,
                                                   fontSize: 64,

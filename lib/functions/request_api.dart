@@ -24,6 +24,9 @@ Future getVisitorState(dynamic list, int index, MainModel model) async {
   try {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
+    if (data != null) {
+      model.setButtonLoading(false);
+    }
     if (data['Data']['LastVisitor'] == true) {
       model.setIsLastVisitor(true);
     } else {
@@ -32,22 +35,23 @@ Future getVisitorState(dynamic list, int index, MainModel model) async {
     print(data['Status']);
     return data;
   } on SocketException catch (e) {
+    model.setButtonLoading(false);
     print(e);
   }
 }
 
 Future saveVisitorForm(
-  String id,
-  String firstName,
-  String lastName,
-  String email,
-  int reason,
-  int gender,
-  String origin,
-  String code,
-  String number,
-  String photo,
-) async {
+    String id,
+    String firstName,
+    String lastName,
+    String email,
+    int reason,
+    int gender,
+    String origin,
+    String code,
+    String number,
+    String photo,
+    MainModel model) async {
   print('savevisitorform');
   var url = Uri.https(
       apiUrl, '/VisitorManagementBackend/public/api/visitor/visitor-form-tab');
@@ -58,8 +62,6 @@ Future saveVisitorForm(
   var bodySend = """ 
       {
             "VisitorID" : "$id",
-            "FirstName" : "${firstName}",
-            "LastName" : "${lastName}",
             "Email" : "${email}",
             "VisitReason" : $reason,
             "Gender" : $gender,
@@ -75,9 +77,13 @@ Future saveVisitorForm(
   try {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
+    if (data != null) {
+      model.setButtonLoading(false);
+    }
     print(data);
     return data;
   } on SocketException catch (e) {
+    model.setButtonLoading(false);
     print(e);
   }
 }
@@ -92,6 +98,7 @@ Future onSiteCheckin(
   String code,
   String number,
   String photo,
+  MainModel model,
 ) async {
   var url = Uri.https(apiUrl,
       '/VisitorManagementBackend/public/api/visitor/add-visitor-onsite');
@@ -119,14 +126,16 @@ Future onSiteCheckin(
   try {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
+    model.setButtonLoading(false);
     print(data);
     return data;
   } on SocketException catch (e) {
+    model.setButtonLoading(false);
     print(e);
   }
 }
 
-Future confirmAttendants(String listAttendant) async {
+Future confirmAttendants(String listAttendant, MainModel model) async {
   var url = Uri.https(apiUrl,
       '/VisitorManagementBackend/public/api/visitor/confirm-visitors-multiple');
   Map<String, String> requestHeader = {
@@ -144,8 +153,10 @@ Future confirmAttendants(String listAttendant) async {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
     print(data);
+    model.setButtonLoading(false);
     return data;
   } on SocketException catch (e) {
+    model.setButtonLoading(false);
     print(e);
   }
 }

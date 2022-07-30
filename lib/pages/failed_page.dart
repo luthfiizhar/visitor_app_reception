@@ -2,18 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
-import 'package:visitor_app/components/custom_appbar.dart';
 import 'package:visitor_app/components/notif_dialog.dart';
 import 'package:visitor_app/components/regular_button.dart';
 import 'package:visitor_app/functions/hive_functions.dart';
 import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/main_model.dart';
 
-class WelcomeGuestPage extends StatelessWidget {
-  const WelcomeGuestPage({Key? key}) : super(key: key);
+class FailedPage extends StatelessWidget {
+  const FailedPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +38,7 @@ class WelcomeGuestPage extends StatelessWidget {
                         //   child: Image.asset('assets/welcome_image.png'),
                         //   fit: BoxFit.cover,
                         // ),
-                        child: SvgPicture.asset('assets/welcome_image_new.svg',
+                        child: SvgPicture.asset('assets/email failed.svg',
                             fit: BoxFit.cover),
                       ),
                     ),
@@ -57,7 +55,7 @@ class WelcomeGuestPage extends StatelessWidget {
                                 RichText(
                                   textAlign: TextAlign.center,
                                   text: TextSpan(
-                                    text: 'Welcome!',
+                                    text: 'Registration Failed!',
                                     style: TextStyle(
                                         color: eerieBlack,
                                         fontSize: 48,
@@ -69,10 +67,9 @@ class WelcomeGuestPage extends StatelessWidget {
                                   child: RichText(
                                     textAlign: TextAlign.center,
                                     text: TextSpan(
-                                        text:
-                                            'We\'ll inform the host that you\'re here',
+                                        text: 'Please try again',
                                         style: TextStyle(
-                                            color: onyxBlack,
+                                            color: iconBlack,
                                             fontSize: 32,
                                             fontWeight: FontWeight.w400)),
                                   ),

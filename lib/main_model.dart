@@ -18,6 +18,7 @@ class MainModel extends ChangeNotifier {
   String _listSelectedVisitor = "";
   bool _isLastVisitor = true;
   bool _isEdit = false;
+  bool _buttonLoading = false;
 
   int get indexPage => _index;
   String get inviteCode => _inviteCode;
@@ -36,6 +37,7 @@ class MainModel extends ChangeNotifier {
   String get listSelectedVisitor => _listSelectedVisitor;
   bool get isLastVisitor => _isLastVisitor;
   bool get isEdit => _isEdit;
+  bool get buttonLoading => _buttonLoading;
 
   void updateIndex(int idx) {
     _index = idx;
@@ -122,6 +124,10 @@ class MainModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setButtonLoading(bool value) {
+    _buttonLoading = value;
+  }
+
   void resetAll() {
     _index = 1;
     _inviteCode = "";
@@ -140,6 +146,7 @@ class MainModel extends ChangeNotifier {
     _listSelectedVisitor = "";
     _isLastVisitor = true;
     _isEdit = false;
+    _buttonLoading = false;
     notifyListeners();
   }
 }

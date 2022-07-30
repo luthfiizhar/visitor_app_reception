@@ -3,6 +3,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 import 'package:visitor_app/constant.dart';
 import 'package:visitor_app/main_model.dart';
+import 'package:visitor_app/pages/failed_page.dart';
 import 'package:visitor_app/pages/guest_list_page.dart';
 import 'package:visitor_app/pages/home_page.dart';
 import 'package:visitor_app/pages/invitation_page.dart';
@@ -28,25 +29,31 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-          fontFamily: 'Helvetica',
-          primarySwatch: Colors.blue,
-          scaffoldBackgroundColor: Color(0xFFF5F5F5)),
-      home: HomePage(),
-      navigatorKey: navKey,
-      routes: {
-        '/home': (context) => HomePage(),
-        '/invite': (context) => InvitationPage(),
-        '/qr': (context) => QrCodePage(),
-        '/new': (context) => NewGuestPage(),
-        '/declaration': (context) => VisitorDeclarationPage(),
-        '/guestList': (context) => GuestListPage(),
-        '/visitorInfo': (context) => VisitorInfoPage(),
-        '/welcome': (context) => WelcomeGuestPage(),
+    return Listener(
+      onPointerDown: (_) {
+        WidgetsBinding.instance.focusManager.primaryFocus?.unfocus();
       },
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: ThemeData(
+            fontFamily: 'Helvetica',
+            primarySwatch: Colors.blue,
+            scaffoldBackgroundColor: Color(0xFFF5F5F5)),
+        home: HomePage(),
+        navigatorKey: navKey,
+        routes: {
+          '/home': (context) => HomePage(),
+          '/invite': (context) => InvitationPage(),
+          '/qr': (context) => QrCodePage(),
+          '/new': (context) => NewGuestPage(),
+          '/declaration': (context) => VisitorDeclarationPage(),
+          '/guestList': (context) => GuestListPage(),
+          '/visitorInfo': (context) => VisitorInfoPage(),
+          '/welcome': (context) => WelcomeGuestPage(),
+          '/failed_page': (context) => FailedPage(),
+        },
+      ),
     );
   }
 }

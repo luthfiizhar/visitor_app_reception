@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
+import 'package:visitor_app/components/notif_dialog.dart';
 import 'package:visitor_app/components/regular_button.dart';
+import 'package:visitor_app/functions/hive_functions.dart';
+import 'package:visitor_app/functions/request_api.dart';
+import 'package:visitor_app/main_model.dart';
 
 class VisitorDeclarationPage extends StatefulWidget {
   const VisitorDeclarationPage({Key? key}) : super(key: key);
@@ -16,98 +21,172 @@ class VisitorDeclarationPage extends StatefulWidget {
 class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(75),
-          child: CustAppBar(),
-        ),
-        body: Container(
-          padding: EdgeInsets.only(top: 20, left: 100, right: 100),
-          child: Column(children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  'Visitor Declaration',
-                  style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w600,
-                      color: eerieBlack),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Row(
+    return Consumer<MainModel>(builder: (context, model, child) {
+      return SafeArea(
+        child: Scaffold(
+          appBar: PreferredSize(
+            preferredSize: Size.fromHeight(75),
+            child: CustAppBar(),
+          ),
+          body: Container(
+            padding: EdgeInsets.only(top: 20, left: 100, right: 100),
+            child: Column(children: [
+              Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    'By filling the form, You declare that:',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w400),
+                    'Visitor Declaration',
+                    style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w600,
+                        color: eerieBlack),
                   ),
                 ],
               ),
-            ),
-            Container(
-              padding: EdgeInsets.only(top: 50),
-              child: Column(
-                children: [
-                  DeclarationTextContainer(
-                    number: '1',
-                    text:
-                        'I do not have symptoms of difficulty breathing, fever, cough, runny nose, tiredness & diarrhea.',
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40),
-                    child: DeclarationTextContainer(
-                      number: '2',
-                      text:
-                          'I have not had direct or close contact with confirmed COVID-19 patient in the last 14 days.',
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'By filling the form, You declare that:',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w400,
+                        color: onyxBlack,
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40),
-                    child: DeclarationTextContainer(
-                      number: '3',
-                      text: 'I have not traveled abroad in the past 14 days.',
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40),
-                    child: DeclarationTextContainer(
-                      number: '4',
-                      text: 'I am not in recommendation of self-quarantine.',
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 40),
-                    child: DeclarationTextContainer(
-                      number: '5',
-                      text:
-                          'I agree to the term & consent to the collection of My information for the purpose of COVID-19 contact tracing.',
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 100),
-                    child: SizedBox(
-                        width: 600,
-                        height: 80,
-                        child: RegularButton(
-                          title: 'Next',
-                          // routeName: '',
-                          onTap: () {
-                            Navigator.pushNamed(context, '/welcome');
-                          },
-                        )),
-                  )
-                ],
+                  ],
+                ),
               ),
-            )
-          ]),
+              Container(
+                padding: EdgeInsets.only(top: 50),
+                child: Column(
+                  children: [
+                    DeclarationTextContainer(
+                      number: '1',
+                      text:
+                          'I do not have symptoms of difficulty breathing, fever, cough, runny nose, tiredness & diarrhea.',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40),
+                      child: DeclarationTextContainer(
+                        number: '2',
+                        text:
+                            'I have not had direct or close contact with confirmed COVID-19 patient in the last 14 days.',
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40),
+                      child: DeclarationTextContainer(
+                        number: '3',
+                        text: 'I have not traveled abroad in the past 14 days.',
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40),
+                      child: DeclarationTextContainer(
+                        number: '4',
+                        text: 'I am not in recommendation of self-quarantine.',
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 40),
+                      child: DeclarationTextContainer(
+                        number: '5',
+                        text:
+                            'I agree to the term & consent to the collection of My information for the purpose of COVID-19 contact tracing.',
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 100),
+                      child: model.buttonLoading
+                          ? CircularProgressIndicator(
+                              color: eerieBlack,
+                            )
+                          : SizedBox(
+                              width: 600,
+                              height: 80,
+                              child: RegularButton(
+                                title: 'Next',
+                                // routeName: '',
+                                onTap: () {
+                                  setState(() {});
+                                  model.setButtonLoading(true);
+                                  print(model.listSelectedVisitor);
+                                  if (model.isEdit) {
+                                    confirmAttendants(
+                                            model.listSelectedVisitor, model)
+                                        .then((value) {
+                                      if (value['Status'] == '200') {
+                                        clearVisitorData();
+                                        model.resetAll();
+                                        // notifDialog(context, true, '')
+                                        //     .then((value) {
+                                        //   Navigator.of(context)
+                                        //       .pushNamedAndRemoveUntil(
+                                        //           '/home',
+                                        //           (Route<dynamic> route) =>
+                                        //               false);
+                                        // });
+                                        Navigator.pushNamed(
+                                            context, '/welcome');
+                                      }
+                                      if (value['Status'] == '400') {
+                                        clearVisitorData();
+                                        model.resetAll();
+                                        // notifDialog(context, false).then((value) {
+                                        //   Navigator.of(context)
+                                        //       .pushNamedAndRemoveUntil('/home',
+                                        //           (Route<dynamic> route) => false);
+                                        // });
+                                        Navigator.pushNamed(
+                                            context, '/failed_page');
+                                      }
+                                    });
+                                  } else {
+                                    onSiteCheckin(
+                                            model.firstName,
+                                            model.lastName,
+                                            model.email,
+                                            model.reason,
+                                            model.gender,
+                                            model.origin,
+                                            model.phoneCode,
+                                            model.phoneNumber,
+                                            model.photo,
+                                            model)
+                                        .then((value) {
+                                      if (value['Status'] == '200') {
+                                        // notifDialog(context, true).then((value) {
+                                        //   Navigator.of(context)
+                                        //       .pushNamedAndRemoveUntil('/home',
+                                        //           (Route<dynamic> route) => false);
+                                        // });
+                                        Navigator.pushNamed(
+                                            context, '/welcome');
+                                      } else {
+                                        // notifDialog(context, true).then((value) {
+                                        //   Navigator.of(context)
+                                        //       .pushNamedAndRemoveUntil('/home',
+                                        //           (Route<dynamic> route) => false);
+                                        // });
+                                        Navigator.pushNamed(
+                                            context, '/failed_page');
+                                      }
+                                    });
+                                  }
+                                },
+                              )),
+                    )
+                  ],
+                ),
+              )
+            ]),
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
 
@@ -136,7 +215,11 @@ class DeclarationTextContainer extends StatelessWidget {
               child: Wrap(children: [
             Text(
               '$text',
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.w400),
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w400,
+                color: onyxBlack,
+              ),
             )
           ])),
         ],

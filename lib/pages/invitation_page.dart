@@ -10,6 +10,7 @@ import 'package:pinput/pinput.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
+import 'package:visitor_app/components/notif_dialog.dart';
 import 'package:visitor_app/components/regular_button.dart';
 import 'package:http/http.dart' as http;
 import 'package:visitor_app/constant.dart';
@@ -41,7 +42,7 @@ class _InvitationPageState extends State<InvitationPage> {
   String? pinCode;
   TextEditingController _pinCode = TextEditingController();
 
-  Future getVisitorListByInviteCode() async {
+  Future getVisitorListByInviteCode(MainModel model) async {
     var url = Uri.https(apiUrl,
         '/VisitorManagementBackend/public/api/visitor/get-visitor-invitation');
     Map<String, String> requestHeader = {
@@ -56,6 +57,10 @@ class _InvitationPageState extends State<InvitationPage> {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
     debugPrint(data.toString());
+    if (data != null) {
+      setState(() {});
+      model.setButtonLoading(false);
+    }
     if (data['Status'] == "200") {
       var listBox = await Hive.openBox('listBox');
       listBox.put(
@@ -195,24 +200,37 @@ class _InvitationPageState extends State<InvitationPage> {
                       ),
                       Padding(
                         padding: EdgeInsets.only(top: 250),
-                        child: RegularButton(
-                          width: 300,
-                          height: 80,
-                          title: 'Next',
-                          onTap: () {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-                              print(inviteCode);
-                              getVisitorListByInviteCode().then((value) {
-                                debugPrint(value['Data'].toString());
-                                model.setInviteCode(inviteCode!.toUpperCase());
-                                model.setEmployee(value['Data']['Employee']);
-                                model.setVisitDate(value['Data']['Date']);
-                                Navigator.pushNamed(context, '/guestList');
-                              });
-                            }
-                          },
-                        ),
+                        child: model.buttonLoading
+                            ? CircularProgressIndicator(
+                                color: eerieBlack,
+                              )
+                            : RegularButton(
+                                width: 300,
+                                height: 80,
+                                title: 'Next',
+                                onTap: () {
+                                  if (_formKey.currentState!.validate()) {
+                                    _formKey.currentState!.save();
+                                    setState(() {});
+                                    model.setButtonLoading(true);
+                                    print(inviteCode);
+                                    getVisitorListByInviteCode(model)
+                                        .then((value) {
+                                      debugPrint(value['Data'].toString());
+                                      model.setInviteCode(
+                                          inviteCode!.toUpperCase());
+                                      model.setEmployee(
+                                          value['Data']['Employee']);
+                                      model.setVisitDate(value['Data']['Date']);
+                                      Navigator.pushNamed(
+                                          context, '/guestList');
+                                    }).onError((error, stackTrace) {
+                                      notifDialog(context, false,
+                                          'Invite code not correct!');
+                                    });
+                                  }
+                                },
+                              ),
                       )
                     ],
                   ),

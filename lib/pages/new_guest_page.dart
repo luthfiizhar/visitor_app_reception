@@ -44,6 +44,10 @@ class _NewGuestPageState extends State<NewGuestPage> {
   List visitReasonList = [];
   List genderList = [];
 
+  bool isLoading = false;
+  bool reasonLoading = false;
+  bool genderLoading = false;
+
   TextEditingController _firstName = TextEditingController();
   TextEditingController _lastName = TextEditingController();
   TextEditingController _email = TextEditingController();
@@ -129,6 +133,9 @@ class _NewGuestPageState extends State<NewGuestPage> {
   }
 
   Future getVisitReason() async {
+    setState(() {
+      reasonLoading = true;
+    });
     var url = Uri.https(
         apiUrl, '/VisitorManagementBackend/public/api/visitor/visit-reason');
     Map<String, String> requestHeader = {
@@ -139,15 +146,23 @@ class _NewGuestPageState extends State<NewGuestPage> {
       var response = await http.get(url, headers: requestHeader);
       var data = json.decode(response.body);
       print(data['Data']);
+      if (data != null) {
+        setState(() {
+          reasonLoading = false;
+        });
+      }
       visitReasonList = data['Data'];
     } on SocketException catch (e) {
-      print(e);
+      return e;
     }
 
     setState(() {});
   }
 
   Future getGender() async {
+    setState(() {
+      genderLoading = true;
+    });
     var url = Uri.https(
         apiUrl, '/VisitorManagementBackend/public/api/visitor/gender-list');
     Map<String, String> requestHeader = {
@@ -157,13 +172,16 @@ class _NewGuestPageState extends State<NewGuestPage> {
     try {
       var response = await http.get(url, headers: requestHeader);
       var data = json.decode(response.body);
+      if (data != null) {
+        setState(() {
+          genderLoading = false;
+        });
+      }
       print(data['Data']);
       genderList = data['Data'];
     } on SocketException catch (e) {
-      print(e);
+      return e;
     }
-
-    setState(() {});
   }
 
   Future saveVisitorForm(
@@ -398,6 +416,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                             // ),
                             InputVisitorField(
                               controller: _firstName,
+                              enable: model.isEdit ? false : true,
                               label: 'First Name',
                               focusNode: firstNameNode,
                               keyboardType: TextInputType.text,
@@ -423,13 +442,11 @@ class _NewGuestPageState extends State<NewGuestPage> {
                               padding: const EdgeInsets.only(top: 30.0),
                               // child: lastNameField(),
                               child: InputVisitorField(
+                                // enable: model.isEdit ? false : true,
                                 controller: _lastName,
                                 label: 'Last Name',
                                 keyboardType: TextInputType.text,
                                 focusNode: lastNameNode,
-                                validator: (value) => value!.isEmpty
-                                    ? 'This field is required'
-                                    : null,
                                 onSaved: (value) {
                                   setState(() {
                                     lastName = _lastName.text;
@@ -439,7 +456,17 @@ class _NewGuestPageState extends State<NewGuestPage> {
                             ),
                             Padding(
                               padding: const EdgeInsets.only(top: 30.0),
-                              child: genderField(),
+                              child: genderLoading
+                                  ? Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        CircularProgressIndicator(
+                                          color: eerieBlack,
+                                        ),
+                                      ],
+                                    )
+                                  : genderField(),
                               // child: InputVisitorField(controller: _lastName,label: 'Las',),
                             ),
                             Padding(
@@ -484,7 +511,17 @@ class _NewGuestPageState extends State<NewGuestPage> {
                             ),
                             Padding(
                                 padding: const EdgeInsets.only(top: 30.0),
-                                child: reasonField()),
+                                child: reasonLoading
+                                    ? Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          CircularProgressIndicator(
+                                            color: eerieBlack,
+                                          ),
+                                        ],
+                                      )
+                                    : reasonField()),
                             Padding(
                               padding: const EdgeInsets.only(top: 30.0),
                               child: InputVisitorField(
@@ -522,6 +559,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                         // print(firstName);
                                         // print(lastName);
                                         // print(email);
+                                        // isLoading = true;
+
                                         model.setFirstName(firstName);
                                         model.setLastName(lastName);
                                         model.setEmail(email);
@@ -571,30 +610,33 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                           print('Edit');
                                         } else {
                                           print('NewGuest');
+                                          // model.setButtonLoading(true);
                                           String formattedDate =
                                               DateFormat('d MMMM yyyy')
                                                   .format(DateTime.now());
                                           model.setVisitDate(formattedDate);
                                           print(model.visitDate);
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  VisitorInfoPage(
-                                                visitorId: "",
-                                                firstName: model.firstName,
-                                                lastName: model.lastName,
-                                                email: model.email,
-                                                gender: model.gender,
-                                                visitReason: model.reason,
-                                                employee: model.employee,
-                                                visitDate: model.visitDate,
-                                                origin: model.origin,
-                                                photo: model.photo,
-                                                phoneCode: model.phoneCode,
-                                                phoneNumber: model.phoneNumber,
-                                              ),
-                                            ),
-                                          );
+                                          // Navigator.of(context).push(
+                                          //   MaterialPageRoute(
+                                          //     builder: (context) =>
+                                          //         VisitorInfoPage(
+                                          //       visitorId: "",
+                                          //       firstName: model.firstName,
+                                          //       lastName: model.lastName,
+                                          //       email: model.email,
+                                          //       gender: model.gender,
+                                          //       visitReason: model.reason,
+                                          //       employee: model.employee,
+                                          //       visitDate: model.visitDate,
+                                          //       origin: model.origin,
+                                          //       photo: model.photo,
+                                          //       phoneCode: model.phoneCode,
+                                          //       phoneNumber: model.phoneNumber,
+                                          //     ),
+                                          //   ),
+                                          // );
+                                          Navigator.of(context)
+                                              .pushNamed('/declaration');
                                         }
 
                                         // print(model.listSelectedVisitor);

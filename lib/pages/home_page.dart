@@ -221,7 +221,7 @@ class _HomePageState extends State<HomePage> {
                                         onTap: () {
                                           // model.setisEdit(true);
                                           // Navigator.pushNamed(context, '/qr');
-                                          notifDialog(context, false);
+                                          // notifDialog(context, false);
                                           // Navigator.of(context).push(
                                           //   NotifDialog(isSuccess: true),
                                           // );
@@ -235,6 +235,7 @@ class _HomePageState extends State<HomePage> {
                                       title: 'Invitation',
                                       title2: 'Code',
                                       onTap: () {
+                                        model.resetAll();
                                         model.setisEdit(true);
                                         Navigator.pushNamed(context, '/invite');
                                       },

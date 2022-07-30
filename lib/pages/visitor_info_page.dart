@@ -11,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
+import 'package:visitor_app/components/notif_dialog.dart';
 import 'package:visitor_app/components/regular_button.dart';
 import 'package:visitor_app/constant.dart';
 import 'package:visitor_app/functions/hive_functions.dart';
@@ -266,83 +267,99 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 180),
-                  child: SizedBox(
-                    height: 80,
-                    width: 600,
-                    child: RegularButton(
-                      title: 'Confirm',
-                      onTap: () {
-                        // print(model.isLastVisitor);
-                        if (model.isEdit == true) {
-                          if (model.isLastVisitor) {
-                            saveVisitorForm(
-                                    widget.visitorId!,
-                                    widget.firstName!,
-                                    widget.lastName!,
-                                    widget.email!,
-                                    widget.visitReason!,
-                                    widget.gender!,
-                                    widget.origin!,
-                                    widget.phoneCode!,
-                                    widget.phoneNumber!,
-                                    widget.photo!)
-                                .then((value) {
-                              if (value['Status'] == "200") {
-                                Navigator.pushNamed(context, '/declaration');
-                              }
-                              if (value['Status'] == '400') {
-                                Navigator.pushNamed(context, '/declaration');
-                              } else {
-                                Navigator.pushNamed(context, '/declaration');
-                              }
-                            });
-                          } else {
-                            saveVisitorForm(
-                                    model.visitorId,
-                                    widget.firstName!,
-                                    widget.lastName!,
-                                    widget.email!,
-                                    widget.visitReason!,
-                                    widget.gender!,
-                                    widget.origin!,
-                                    widget.phoneCode!,
-                                    widget.phoneNumber!,
-                                    widget.photo!)
-                                .then((value) {
-                              if (value['Status'] == "200") {
-                                getNextVisitorList(model);
-                              }
-                              if (value['Status'] == '400') {
-                                getNextVisitorList(model);
-                              }
-                            });
+                  child: model.buttonLoading
+                      ? CircularProgressIndicator(
+                          color: eerieBlack,
+                        )
+                      : SizedBox(
+                          height: 80,
+                          width: 600,
+                          child: RegularButton(
+                            title: 'Confirm',
+                            onTap: () {
+                              // print(model.isLastVisitor);
+                              setState(() {});
+                              model.setButtonLoading(true);
+                              if (model.isEdit == true) {
+                                if (model.isLastVisitor) {
+                                  saveVisitorForm(
+                                          widget.visitorId!,
+                                          widget.firstName!,
+                                          widget.lastName!,
+                                          widget.email!,
+                                          widget.visitReason!,
+                                          widget.gender!,
+                                          widget.origin!,
+                                          widget.phoneCode!,
+                                          widget.phoneNumber!,
+                                          widget.photo!,
+                                          model)
+                                      .then((value) {
+                                    setState(() {});
+                                    if (value['Status'] == "200") {
+                                      Navigator.pushNamed(
+                                          context, '/declaration');
+                                    }
+                                    if (value['Status'] == '400') {
+                                      Navigator.pushNamed(
+                                          context, '/declaration');
+                                    } else {
+                                      Navigator.pushNamed(
+                                          context, '/declaration');
+                                    }
+                                  }).onError((error, stackTrace) {
+                                    notifDialog(context, false,
+                                        'Something wrong, please go to receptionist!');
+                                  });
+                                } else {
+                                  saveVisitorForm(
+                                          model.visitorId,
+                                          widget.firstName!,
+                                          widget.lastName!,
+                                          widget.email!,
+                                          widget.visitReason!,
+                                          widget.gender!,
+                                          widget.origin!,
+                                          widget.phoneCode!,
+                                          widget.phoneNumber!,
+                                          widget.photo!,
+                                          model)
+                                      .then((value) {
+                                    setState(() {});
+                                    if (value['Status'] == "200") {
+                                      getNextVisitorList(model);
+                                    }
+                                    if (value['Status'] == '400') {
+                                      getNextVisitorList(model);
+                                    }
+                                  });
 
-                            // Navigator.pushNamed(context, '/welcome');
-                          }
-                        } else {
-                          // onSiteCheckin(
-                          //         widget.firstName!,
-                          //         widget.lastName!,
-                          //         widget.email!,
-                          //         widget.visitReason!,
-                          //         widget.gender!,
-                          //         widget.origin!,
-                          //         widget.phoneCode!,
-                          //         widget.phoneNumber!,
-                          //         widget.photo!)
-                          //     .then((value) {
-                          // if (value['Status'] == '200') {
-                          String formattedDate =
-                              DateFormat('d MMMM yyyy').format(DateTime.now());
-                          model.setVisitDate(formattedDate);
-                          print(model.visitDate);
-                          Navigator.of(context).pushNamed('/declaration');
-                          //   }
-                          // });
-                        }
-                      },
-                    ),
-                  ),
+                                  // Navigator.pushNamed(context, '/welcome');
+                                }
+                              } else {
+                                // onSiteCheckin(
+                                //         widget.firstName!,
+                                //         widget.lastName!,
+                                //         widget.email!,
+                                //         widget.visitReason!,
+                                //         widget.gender!,
+                                //         widget.origin!,
+                                //         widget.phoneCode!,
+                                //         widget.phoneNumber!,
+                                //         widget.photo!)
+                                //     .then((value) {
+                                // if (value['Status'] == '200') {
+                                String formattedDate = DateFormat('d MMMM yyyy')
+                                    .format(DateTime.now());
+                                model.setVisitDate(formattedDate);
+                                print(model.visitDate);
+                                Navigator.of(context).pushNamed('/declaration');
+                                //   }
+                                // });
+                              }
+                            },
+                          ),
+                        ),
                 )
               ],
             ),
@@ -360,11 +377,14 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
     getVisitorState(model.listSelectedVisitor, model.indexPage, model)
         .then((value) {
       print(value);
+      setState(() {});
       if (value['Data']['VisitorStatus'] == "INVITED") {
         model.setIsLastVisitor(value['Data']['LastVisitor']);
         model.setVisitorId(value['Data']['VisitorData']['VisitorID']);
         model.setFirstName(value['Data']['VisitorData']['FirstName']);
-        model.setLastName(value['Data']['VisitorData']['LastName']);
+        model.setLastName(value['Data']['VisitorData']['LastName'] != null
+            ? value['Data']['VisitorData']['LastName']
+            : "");
         model.setEmail(value['Data']['VisitorData']['Email']);
         model.setGender(1);
         model.setReason(0);
@@ -383,7 +403,9 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
       }
       if (value['Data']['VisitorStatus'] == "RESERVED") {
         model.setFirstName(value['Data']['VisitorData']['FirstName']);
-        model.setLastName(value['Data']['VisitorData']['LastName']);
+        model.setLastName(value['Data']['VisitorData']['LastName'] != null
+            ? value['Data']['VisitorData']['LastName']
+            : "");
         model.setEmail(value['Data']['VisitorData']['Email']);
         model.setVisitorId(value['Data']['VisitorData']['VisitorID']);
         model.setPhoneCode(value['Data']['VisitorData']['CountryCode']);
@@ -424,7 +446,9 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
       }
       if (value['Data']['VisitorStatus'] == "APPROVED") {
         model.setFirstName(value['Data']['VisitorData']['FirstName']);
-        model.setLastName(value['Data']['VisitorData']['LastName']);
+        model.setLastName(value['Data']['VisitorData']['LastName'] != null
+            ? value['Data']['VisitorData']['LastName']
+            : "");
         model.setEmail(value['Data']['VisitorData']['Email']);
         model.setVisitorId(value['Data']['VisitorData']['VisitorID']);
         model.setPhoneCode(value['Data']['VisitorData']['CountryCode']);

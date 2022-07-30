@@ -3,7 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/regular_button.dart';
 
-Future<bool> notifDialog(BuildContext context, bool isSucces) async {
+Future<bool> notifDialog(
+    BuildContext context, bool isSucces, String message) async {
   bool shouldPop = true;
   return await showDialog(
       barrierDismissible: false,
@@ -63,9 +64,7 @@ Future<bool> notifDialog(BuildContext context, bool isSucces) async {
                         //   children: [],
                         // ),
                         Text(
-                          isSucces
-                              ? 'Success checked in'
-                              : 'You dont have appointment today',
+                          '$message',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w300,

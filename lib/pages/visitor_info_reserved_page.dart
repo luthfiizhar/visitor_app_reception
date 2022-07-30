@@ -239,7 +239,8 @@ class _VisitorReservedPageState extends State<VisitorReservedPage> {
                                   widget.origin!,
                                   widget.phoneCode!,
                                   widget.phoneNumber!,
-                                  widget.photo!)
+                                  widget.photo!,
+                                  model)
                               .then((value) {
                             if (value['Status'] == "200") {
                               Navigator.pushNamed(context, '/declaration');
@@ -256,7 +257,8 @@ class _VisitorReservedPageState extends State<VisitorReservedPage> {
                                   widget.origin!,
                                   widget.phoneCode!,
                                   widget.phoneNumber!,
-                                  widget.photo!)
+                                  widget.photo!,
+                                  model)
                               .then((value) {
                             if (value['Status'] == "200") {
                               var list = json.decode(model.listSelectedVisitor);
@@ -272,8 +274,11 @@ class _VisitorReservedPageState extends State<VisitorReservedPage> {
                                       ['VisitorData']['VisitorID']);
                                   model.setFirstName(value['Data']
                                       ['VisitorData']['FirstName']);
-                                  model.setLastName(
-                                      value['Data']['VisitorData']['LastName']);
+                                  model.setLastName(value['Data']['VisitorData']
+                                              ['LastName'] !=
+                                          null
+                                      ? value['Data']['VisitorData']['LastName']
+                                      : "");
                                   model.setEmail(
                                       value['Data']['VisitorData']['Email']);
                                   model.setGender(1);

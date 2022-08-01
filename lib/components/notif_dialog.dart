@@ -81,7 +81,7 @@ Future<bool> notifDialog(
                       width: 250,
                       child: RegularButton(
                         sizeFont: 20,
-                        title: 'Confirm',
+                        title: 'Ok',
                         onTap: () {
                           Navigator.of(context).pop(true);
                           // Navigator.pushReplacementNamed(

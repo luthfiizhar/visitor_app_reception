@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
+import 'package:visitor_app/components/notif_dialog.dart';
+import 'package:visitor_app/components/regular_button.dart';
 import 'package:visitor_app/constant.dart';
 import 'package:visitor_app/main_model.dart';
 import 'package:http/http.dart' as http;
@@ -25,6 +27,7 @@ class _QrCodePageState extends State<QrCodePage> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   Barcode? result;
   QRViewController? controller;
+  bool scanned = false;
 
   // late List<CameraDescription> cameras;
   // late CameraController controller;
@@ -65,10 +68,13 @@ class _QrCodePageState extends State<QrCodePage> {
     this.controller = controller;
     await controller.flipCamera();
 
-    controller.scannedDataStream.listen((scanData) {
+    controller.scannedDataStream.listen((scanData) async {
+      await controller.pauseCamera();
       setState(() {
+        scanned = true;
         result = scanData;
       });
+      checkBarcode(Provider.of<MainModel>(context, listen: false));
     });
   }
 
@@ -84,9 +90,11 @@ class _QrCodePageState extends State<QrCodePage> {
           "Code" : "${result!.code}"
       }
     """;
+    print(bodySend);
     var response = await http.post(url, headers: requestHeader, body: bodySend);
+    // print(response.body);
     var data = json.decode(response.body);
-    debugPrint(data.toString());
+    // debugPrint(data.toString());
     if (data['Status'] == "200") {
       var listBox = await Hive.openBox('listBox');
       listBox.put(
@@ -100,11 +108,17 @@ class _QrCodePageState extends State<QrCodePage> {
 
   Future checkBarcode(MainModel model) async {
     getVisitorListByInviteCode().then((value) {
-      debugPrint(value['Data'].toString());
-      model.setInviteCode(result!.code.toString().toUpperCase());
-      model.setEmployee(value['Data']['Employee']);
-      model.setVisitDate(value['Data']['Date']);
-      Navigator.pushNamed(context, '/guestList');
+      // debugPrint(value['Data'].toString());
+      if (value['Status'] == "200") {
+        model.setInviteCode(result!.code.toString().toUpperCase());
+        model.setEmployee(value['Data']['Employee']);
+        model.setVisitDate(value['Data']['Date']);
+        Navigator.pushNamed(context, '/guestList');
+      } else {
+        notifDialog(context, false, value['Message']).then((value) {
+          Navigator.pop(context);
+        });
+      }
     });
   }
 
@@ -125,7 +139,7 @@ class _QrCodePageState extends State<QrCodePage> {
           body: Column(
             children: <Widget>[
               Expanded(
-                flex: 5,
+                flex: 4,
                 child: QRView(
                   key: qrKey,
                   onQRViewCreated: _onQRViewCreated,
@@ -139,13 +153,34 @@ class _QrCodePageState extends State<QrCodePage> {
               ),
               Expanded(
                 flex: 1,
-                child: Center(
-                  child: (result != null)
-                      ? Text(
-                          'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
-                      : Text('Scan a code'),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: !scanned
+                        ? SizedBox()
+                        : SizedBox(
+                            height: 60,
+                            width: 200,
+                            child: RegularButton(
+                              title: 'Re Scan',
+                              onTap: () async {
+                                await controller!.resumeCamera();
+                              },
+                            ),
+                          ),
+                  ),
                 ),
-              )
+              ),
+              // Expanded(
+              //   flex: 1,
+              //   child: Center(
+              //     child: (result != null)
+              //         ? Text(
+              //             'Barcode Type: ${describeEnum(result!.format)}   Data: ${result!.code}')
+              //         : Text('Scan a code'),
+              //   ),
+              // )
             ],
           ),
         ),

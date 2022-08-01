@@ -98,6 +98,7 @@ Future onSiteCheckin(
   String code,
   String number,
   String photo,
+  String employee,
   MainModel model,
 ) async {
   var url = Uri.https(apiUrl,
@@ -117,6 +118,7 @@ Future onSiteCheckin(
             "Code" : "$code",
             "PhoneNumber" : "$number",
             "Declaration" : 1,
+            "EmployeeName" : "$employee",
             "Photo" : "data:image/jpeg;base64,$photo"
 
       }

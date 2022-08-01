@@ -219,8 +219,8 @@ class _HomePageState extends State<HomePage> {
                                         title: 'Scan QR',
                                         title2: '',
                                         onTap: () {
-                                          // model.setisEdit(true);
-                                          // Navigator.pushNamed(context, '/qr');
+                                          model.setisEdit(true);
+                                          Navigator.pushNamed(context, '/qr');
                                           // notifDialog(context, false);
                                           // Navigator.of(context).push(
                                           //   NotifDialog(isSuccess: true),

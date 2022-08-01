@@ -155,6 +155,7 @@ class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
                                             model.phoneCode,
                                             model.phoneNumber,
                                             model.photo,
+                                            model.employee,
                                             model)
                                         .then((value) {
                                       if (value['Status'] == '200') {
@@ -217,7 +218,7 @@ class DeclarationTextContainer extends StatelessWidget {
               '$text',
               style: TextStyle(
                 fontSize: 30,
-                fontWeight: FontWeight.w400,
+                fontWeight: FontWeight.w300,
                 color: onyxBlack,
               ),
             )

@@ -445,7 +445,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                 // enable: model.isEdit ? false : true,
                                 controller: _lastName,
                                 label: 'Last Name',
-                                keyboardType: TextInputType.text,
+                                keyboardType: TextInputType.name,
                                 focusNode: lastNameNode,
                                 onSaved: (value) {
                                   setState(() {
@@ -498,7 +498,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                 controller: _origin,
                                 label: 'Origin Company',
                                 focusNode: originNode,
-                                keyboardType: TextInputType.text,
+                                keyboardType: TextInputType.name,
                                 validator: (value) => value == ""
                                     ? "This Field is Required"
                                     : null,
@@ -615,6 +615,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                               DateFormat('d MMMM yyyy')
                                                   .format(DateTime.now());
                                           model.setVisitDate(formattedDate);
+                                          // model.setEmployee(employee);
                                           print(model.visitDate);
                                           // Navigator.of(context).push(
                                           //   MaterialPageRoute(

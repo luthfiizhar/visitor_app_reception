@@ -45,7 +45,7 @@ class WelcomeGuestPage extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 100),
+                      padding: const EdgeInsets.only(top: 50),
                       child: Container(
                         // padding: EdgeInsets.only(top: 100),
                         height: 110,
@@ -84,7 +84,7 @@ class WelcomeGuestPage extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 200),
+                      padding: EdgeInsets.only(top: 170),
                       child: SizedBox(
                           width: 300,
                           height: 80,

@@ -267,27 +267,34 @@ class _GuestListPageState extends State<GuestListPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      RichText(
-                        text: TextSpan(
-                            text: 'Employee: ',
-                            style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF393E46)),
-                            children: [
-                              TextSpan(
-                                text: '${model.employee}',
-                                style: TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0xFF393E46)),
-                              )
-                            ]),
-                      )
-                    ],
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Wrap(
+                      // mainAxisAlignment: MainAxisAlignment.start,
+                      alignment: WrapAlignment.start,
+                      // runAlignment: WrapAlignment.start,
+                      children: [
+                        RichText(
+                          overflow: TextOverflow.clip,
+                          maxLines: 2,
+                          text: TextSpan(
+                              text: 'Employee: ',
+                              style: TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF393E46)),
+                              children: [
+                                TextSpan(
+                                  text: '${model.employee}',
+                                  style: TextStyle(
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xFF393E46)),
+                                )
+                              ]),
+                        )
+                      ],
+                    ),
                   ),
                 ),
                 Padding(

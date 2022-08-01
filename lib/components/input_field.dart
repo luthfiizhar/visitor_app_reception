@@ -115,6 +115,7 @@ class _InputVisitorFieldState extends State<InputVisitorField> {
               // },
               onSaved: widget.onSaved,
               validator: widget.validator,
+              textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding:

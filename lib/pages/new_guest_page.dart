@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -21,6 +22,7 @@ import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/keys.dart';
 import 'package:visitor_app/main_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:visitor_app/pages/camera_page.dart';
 import 'package:visitor_app/pages/visitor_info_page.dart';
 
 class NewGuestPage extends StatefulWidget {
@@ -57,6 +59,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
   TextEditingController _employee = TextEditingController();
   TextEditingController _test = TextEditingController();
 
+  // final cameras = await availableCameras();
+
   late FocusNode firstNameNode;
   late FocusNode lastNameNode;
   late FocusNode emailNode;
@@ -83,6 +87,11 @@ class _NewGuestPageState extends State<NewGuestPage> {
   String? base64image;
   final picker = ImagePicker();
   File? _image;
+
+  Future getCamera() async {
+    await availableCameras().then((value) => Navigator.push(context,
+        MaterialPageRoute(builder: (_) => CameraPage(cameras: value))));
+  }
 
   Future getImage() async {
     print('getimage');
@@ -420,6 +429,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                               label: 'First Name',
                               focusNode: firstNameNode,
                               keyboardType: TextInputType.text,
+                              textInputAction: TextInputAction.next,
                               validator: (value) {
                                 if (value!.isEmpty) {
                                   setState(() {
@@ -446,6 +456,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                 controller: _lastName,
                                 label: 'Last Name',
                                 keyboardType: TextInputType.name,
+                                textInputAction: TextInputAction.next,
                                 focusNode: lastNameNode,
                                 onSaved: (value) {
                                   setState(() {
@@ -477,6 +488,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                   label: 'Email',
                                   focusNode: emailNode,
                                   keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
                                   onSaved: (value) {
                                     setState(() {
                                       email = _email.text;
@@ -499,6 +511,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                 label: 'Origin Company',
                                 focusNode: originNode,
                                 keyboardType: TextInputType.name,
+                                textInputAction: TextInputAction.next,
                                 validator: (value) => value == ""
                                     ? "This Field is Required"
                                     : null,
@@ -529,6 +542,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                 label: 'Meeting with',
                                 focusNode: employeeNode,
                                 keyboardType: TextInputType.name,
+                                textInputAction: TextInputAction.done,
                                 onSaved: (value) {
                                   setState(() {
                                     employee = value!;
@@ -833,6 +847,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
       controller: _phoneNumber,
       // autovalidateMode: AutovalidateMode.onUserInteraction,
       keyboardType: TextInputType.phone,
+      textInputAction: TextInputAction.next,
       validator: (value) => value!.isEmpty ? 'This field is required' : null,
       onSaved: (value) {
         setState(() {
@@ -885,6 +900,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
             cursorColor: redRose,
             controller: _phoneNumberCode,
             focusNode: phoneCodeNode,
+            textInputAction: TextInputAction.next,
             validator: (value) {
               if (_phoneNumber.text.isEmpty) {
                 return '';
@@ -1205,6 +1221,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
                               onTap: () {
                                 setState(() {
                                   print('tap');
+                                  // getCamera();
+
                                   getImage().then((value) {
                                     emptyPhoto = false;
                                     print('base64');

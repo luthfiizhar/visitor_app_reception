@@ -62,7 +62,6 @@ Future saveVisitorForm(
   var bodySend = """ 
       {
             "VisitorID" : "$id",
-            "Email" : "${email}",
             "VisitReason" : $reason,
             "Gender" : $gender,
             "CompanyName" : "$origin",

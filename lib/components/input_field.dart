@@ -16,6 +16,7 @@ class InputVisitorField extends StatefulWidget {
       this.validator,
       this.onSaved,
       this.enable,
+      this.textInputAction,
       Key? key});
 
   TextEditingController controller;
@@ -27,6 +28,7 @@ class InputVisitorField extends StatefulWidget {
   // final String? validator;
   final FormFieldValidator<String>? validator;
   final FormFieldSetter<String>? onSaved;
+  final TextInputAction? textInputAction;
   bool? enable;
   // final GlobalKey? formKey;
 
@@ -103,6 +105,7 @@ class _InputVisitorFieldState extends State<InputVisitorField> {
               enabled: widget.enable != null ? widget.enable : true,
               key: widget.key,
               keyboardType: widget.keyboardType,
+              textInputAction: widget.textInputAction,
               cursorColor: onyxBlack,
               // focusNode: widget.focusNode,
               controller: widget.controller,

@@ -219,6 +219,7 @@ class _HomePageState extends State<HomePage> {
                                         title: 'Scan QR',
                                         title2: '',
                                         onTap: () {
+                                          model.resetAll();
                                           model.setisEdit(true);
                                           Navigator.pushNamed(context, '/qr');
                                           // notifDialog(context, false);
@@ -248,6 +249,7 @@ class _HomePageState extends State<HomePage> {
                                       title: 'New',
                                       title2: 'Guest',
                                       onTap: () {
+                                        model.resetAll();
                                         model.setisEdit(false);
                                         Navigator.push(
                                             context,

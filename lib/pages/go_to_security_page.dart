@@ -12,8 +12,8 @@ import 'package:visitor_app/functions/hive_functions.dart';
 import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/main_model.dart';
 
-class WelcomeGuestPage extends StatelessWidget {
-  const WelcomeGuestPage({Key? key}) : super(key: key);
+class GoToSecurityPage extends StatelessWidget {
+  const GoToSecurityPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class WelcomeGuestPage extends StatelessWidget {
                         //   child: Image.asset('assets/welcome_image.png'),
                         //   fit: BoxFit.cover,
                         // ),
-                        child: SvgPicture.asset('assets/welcome_image_new.svg',
+                        child: SvgPicture.asset('assets/cek_security.svg',
                             fit: BoxFit.cover),
                       ),
                     ),
@@ -57,7 +57,7 @@ class WelcomeGuestPage extends StatelessWidget {
                                 RichText(
                                   textAlign: TextAlign.center,
                                   text: TextSpan(
-                                    text: 'Welcome!',
+                                    text: 'Uh Oh!',
                                     style: TextStyle(
                                         color: eerieBlack,
                                         fontSize: 48,
@@ -70,7 +70,7 @@ class WelcomeGuestPage extends StatelessWidget {
                                     textAlign: TextAlign.center,
                                     text: TextSpan(
                                         text:
-                                            'We\'ll inform the host that you\'re here',
+                                            'Please check your invitation code on Security Guard!',
                                         style: TextStyle(
                                             color: onyxBlack,
                                             fontSize: 32,

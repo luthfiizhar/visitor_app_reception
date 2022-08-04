@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:visitor_app/constant.dart';
 import 'package:visitor_app/main_model.dart';
 import 'package:visitor_app/pages/failed_page.dart';
+import 'package:visitor_app/pages/go_to_security_page.dart';
 import 'package:visitor_app/pages/guest_list_page.dart';
 import 'package:visitor_app/pages/home_page.dart';
 import 'package:visitor_app/pages/invitation_page.dart';
@@ -52,6 +53,7 @@ class MyApp extends StatelessWidget {
           '/visitorInfo': (context) => VisitorInfoPage(),
           '/welcome': (context) => WelcomeGuestPage(),
           '/failed_page': (context) => FailedPage(),
+          '/gotosec': (context) => GoToSecurityPage(),
         },
       ),
     );

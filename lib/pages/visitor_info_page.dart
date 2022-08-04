@@ -172,7 +172,10 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
                         CircleAvatar(
                           radius: 100,
                           backgroundImage: MemoryImage(
-                            Base64Decoder().convert(photo!),
+                            photo!.startsWith('data', 0)
+                                ? Base64Decoder()
+                                    .convert(photo!.split(',').last)
+                                : Base64Decoder().convert(photo!),
                           ),
                         ),
                         // Container(

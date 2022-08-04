@@ -17,6 +17,7 @@ import 'package:visitor_app/constant.dart';
 import 'package:visitor_app/functions/hive_functions.dart';
 import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/main_model.dart';
+import 'package:visitor_app/pages/go_to_security_page.dart';
 import 'package:visitor_app/pages/new_guest_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:visitor_app/pages/visitor_info_page.dart';
@@ -47,6 +48,23 @@ class _GuestListPageState extends State<GuestListPage> {
   List reasonVisitList = [];
 
   var listSelected;
+
+  Future checkGuestStatus(List<Visitor> list) async {
+    var status = false;
+    list.forEach((element) {
+      if (element.status!.contains("RESERVED")) {
+        // Navigator.of(context).push(MaterialPageRoute(
+        //   builder: (context) => GoToSecurityPage(),
+        // ));
+        print('status reserved');
+        status = true;
+      } else {
+        status = false;
+      }
+    });
+    // list.map((e) {});
+    return status;
+  }
 
   @override
   void initState() {
@@ -270,9 +288,7 @@ class _GuestListPageState extends State<GuestListPage> {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Wrap(
-                      // mainAxisAlignment: MainAxisAlignment.start,
                       alignment: WrapAlignment.start,
-                      // runAlignment: WrapAlignment.start,
                       children: [
                         RichText(
                           overflow: TextOverflow.clip,
@@ -368,7 +384,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                         fontWeight: FontWeight.w400,
                                         color: onyxBlack),
                                   ),
-                                  subtitle: !map.completed!
+                                  subtitle: map.status == "INVITED"
                                       ? Padding(
                                           padding:
                                               const EdgeInsets.only(top: 10),
@@ -380,19 +396,33 @@ class _GuestListPageState extends State<GuestListPage> {
                                                 color: orangeRed),
                                           ),
                                         )
-                                      : map.status == "CHECKED IN"
+                                      : map.status == "RESERVED"
                                           ? Padding(
                                               padding: const EdgeInsets.only(
                                                   top: 10),
                                               child: Text(
-                                                'Already Checked In',
+                                                'Visitor not verified',
                                                 style: TextStyle(
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.w400,
-                                                    color: onyxBlack),
+                                                    color: orangeRed),
                                               ),
                                             )
-                                          : null,
+                                          : map.status == "CHECKED IN"
+                                              ? Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 10),
+                                                  child: Text(
+                                                    'Already Checked In',
+                                                    style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                        color: onyxBlack),
+                                                  ),
+                                                )
+                                              : null,
                                   trailing: Transform.scale(
                                     scale: 1.5,
                                     child: Checkbox(
@@ -413,6 +443,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                               visitorId: map.visitorId,
                                               firstName: map.firstName,
                                               lastName: map.lastName,
+                                              status: map.status,
                                               email: map.email,
                                               origin: map.origin,
                                               employee: map.employee,
@@ -504,236 +535,174 @@ class _GuestListPageState extends State<GuestListPage> {
                               model.updateIndex(1);
                               print(model.indexPage);
                               if (selectedVisitor.isEmpty) {
-                                print('empty');
+                                // print('empty');
                                 notifDialog(
-                                    context, false, 'Please select visitor');
-                              } else {
-                                model.setListSelectedVisitor(listSelected);
-                                print(model.listSelectedVisitor);
-                                getVisitorState(
-                                        listSelected, model.indexPage, model)
+                                        context, false, 'Please select visitor')
                                     .then((value) {
                                   setState(() {});
+                                  model.setButtonLoading(false);
+                                });
+                              } else {
+                                checkGuestStatus(selectedVisitor).then((value) {
+                                  model.setButtonLoading(false);
                                   print(value);
-                                  model.setisEdit(true);
-                                  if (value['Status'] == '200') {
-                                    model.setIsLastVisitor(
-                                        value['Data']['LastVisitor']);
-                                    if (value['Data']['VisitorStatus'] ==
-                                        'INVITED') {
-                                      model.setFirstName(value['Data']
-                                          ['VisitorData']['FirstName']);
-                                      model.setLastName(value['Data']
-                                                  ['VisitorData']['LastName'] !=
-                                              null
-                                          ? value['Data']['VisitorData']
-                                              ['LastName']
-                                          : "");
-                                      model.setEmail(value['Data']
-                                          ['VisitorData']['Email']);
-                                      model.setVisitorId(value['Data']
-                                          ['VisitorData']['VisitorID']);
+                                  if (!value) {
+                                    model.setListSelectedVisitor(listSelected);
+                                    print(model.listSelectedVisitor);
+                                    getVisitorState(listSelected,
+                                            model.indexPage, model)
+                                        .then((value) {
+                                      setState(() {});
+                                      print(value);
+                                      model.setisEdit(true);
+                                      if (value['Status'] == '200') {
+                                        model.setIsLastVisitor(
+                                            value['Data']['LastVisitor']);
+                                        if (value['Data']['VisitorStatus'] ==
+                                            'INVITED') {
+                                          model.setFirstName(value['Data']
+                                              ['VisitorData']['FirstName']);
+                                          model.setLastName(value['Data']
+                                                          ['VisitorData']
+                                                      ['LastName'] !=
+                                                  null
+                                              ? value['Data']['VisitorData']
+                                                  ['LastName']
+                                              : "");
+                                          model.setEmail(value['Data']
+                                              ['VisitorData']['Email']);
+                                          model.setVisitorId(value['Data']
+                                              ['VisitorData']['VisitorID']);
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (BuildContext context) =>
+                                                  NewGuestPage(
+                                                isEdit: true,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        if (value['Data']['VisitorStatus'] ==
+                                            'RESERVED') {
+                                          print('reserved');
+                                          model.setFirstName(value['Data']
+                                              ['VisitorData']['FirstName']);
+                                          model.setLastName(value['Data']
+                                                          ['VisitorData']
+                                                      ['LastName'] !=
+                                                  null
+                                              ? value['Data']['VisitorData']
+                                                  ['LastName']
+                                              : "");
+                                          model.setEmail(value['Data']
+                                              ['VisitorData']['Email']);
+                                          model.setVisitorId(value['Data']
+                                              ['VisitorData']['VisitorID']);
+                                          model.setPhoneCode(value['Data']
+                                              ['VisitorData']['CountryCode']);
+                                          model.setPhoneNumber(value['Data']
+                                              ['VisitorData']['PhoneNumber']);
+                                          model.setOrigin(value['Data']
+                                              ['VisitorData']['CompanyName']);
+                                          model.setPhoto(value['Data']
+                                                      ['VisitorData']
+                                                  ['VisitorPhoto']
+                                              .toString()
+                                              .split(',')
+                                              .last);
+                                          model.setGender(value['Data']
+                                              ['VisitorData']['Gender']);
+                                          model.setReason(value['Data']
+                                              ['VisitorData']['VisitReason']);
 
-                                      // print(model.firstName);
-                                      // saveVisitorData(
-                                      //     value['Data']['VisitorData']['FirstName'],
-                                      //     value['Data']['VisitorData']['LastName'],
-                                      //     "",
-                                      //     value['Data']['VisitorData']['Email'],
-                                      //     "",
-                                      //     "",
-                                      //     "",
-                                      //     "",
-                                      //     "",
-                                      //     "",
-                                      //     false);
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (BuildContext context) =>
-                                              NewGuestPage(
-                                            isEdit: true,
-                                          ),
-                                        ),
-                                      );
-                                      // Navigator.pushNamed(context, '/new')
-                                      //     .then((value) {
-                                      //   // setState(() {});
-                                      // });
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  VisitorInfoPage(
+                                                visitorId: model.visitorId,
+                                                firstName: model.firstName,
+                                                lastName: model.lastName,
+                                                email: model.email,
+                                                gender: model.gender,
+                                                visitReason: model.reason,
+                                                employee: model.employee,
+                                                visitDate: model.visitDate,
+                                                origin: model.origin,
+                                                photo: model.photo,
+                                                phoneCode: model.phoneCode,
+                                                phoneNumber: model.phoneNumber,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        if (value['Data']['VisitorStatus'] ==
+                                            'APPROVED') {
+                                          print('approved');
+                                          model.setFirstName(value['Data']
+                                              ['VisitorData']['FirstName']);
+                                          model.setLastName(value['Data']
+                                                          ['VisitorData']
+                                                      ['LastName'] !=
+                                                  null
+                                              ? value['Data']['VisitorData']
+                                                  ['LastName']
+                                              : "");
+                                          model.setEmail(value['Data']
+                                              ['VisitorData']['Email']);
+                                          model.setVisitorId(value['Data']
+                                              ['VisitorData']['VisitorID']);
+                                          model.setPhoneCode(value['Data']
+                                              ['VisitorData']['CountryCode']);
+                                          model.setPhoneNumber(value['Data']
+                                              ['VisitorData']['PhoneNumber']);
+                                          model.setOrigin(value['Data']
+                                              ['VisitorData']['CompanyName']);
+                                          model.setPhoto(value['Data']
+                                                      ['VisitorData']
+                                                  ['VisitorPhoto']
+                                              .toString()
+                                              .split(',')
+                                              .last);
+                                          // model.setVisitDate(
+                                          //     value['Data']['VisitorData']['VisitTime']);
+                                          model.setGender(value['Data']
+                                              ['VisitorData']['Gender']);
+                                          model.setReason(value['Data']
+                                              ['VisitorData']['VisitReason']);
 
-                                    }
-                                    if (value['Data']['VisitorStatus'] ==
-                                        'RESERVED') {
-                                      print('reserved');
-                                      model.setFirstName(value['Data']
-                                          ['VisitorData']['FirstName']);
-                                      model.setLastName(value['Data']
-                                                  ['VisitorData']['LastName'] !=
-                                              null
-                                          ? value['Data']['VisitorData']
-                                              ['LastName']
-                                          : "");
-                                      model.setEmail(value['Data']
-                                          ['VisitorData']['Email']);
-                                      model.setVisitorId(value['Data']
-                                          ['VisitorData']['VisitorID']);
-                                      model.setPhoneCode(value['Data']
-                                          ['VisitorData']['CountryCode']);
-                                      model.setPhoneNumber(value['Data']
-                                          ['VisitorData']['PhoneNumber']);
-                                      model.setOrigin(value['Data']
-                                          ['VisitorData']['CompanyName']);
-                                      model.setPhoto(value['Data']
-                                              ['VisitorData']['VisitorPhoto']
-                                          .toString()
-                                          .split(',')
-                                          .last);
-                                      // model.setVisitDate(
-                                      //     value['Data']['VisitorData']['VisitTime']);
-                                      model.setGender(value['Data']
-                                          ['VisitorData']['Gender']);
-                                      model.setReason(value['Data']
-                                          ['VisitorData']['VisitReason']);
-
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => VisitorInfoPage(
-                                            visitorId: model.visitorId,
-                                            firstName: model.firstName,
-                                            lastName: model.lastName,
-                                            email: model.email,
-                                            gender: model.gender,
-                                            visitReason: model.reason,
-                                            employee: model.employee,
-                                            visitDate: model.visitDate,
-                                            origin: model.origin,
-                                            photo: model.photo,
-                                            // photo: model.photo,
-                                            phoneCode: model.phoneCode,
-                                            phoneNumber: model.phoneNumber,
-                                            // genderString: value['Data']['VisitorData']
-                                            //     ['Gender'],
-                                            // reasonString: value['Data']['VisitorData']
-                                            //     ['VisitReason'],
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    if (value['Data']['VisitorStatus'] ==
-                                        'APPROVED') {
-                                      print('approved');
-                                      model.setFirstName(value['Data']
-                                          ['VisitorData']['FirstName']);
-                                      model.setLastName(value['Data']
-                                                  ['VisitorData']['LastName'] !=
-                                              null
-                                          ? value['Data']['VisitorData']
-                                              ['LastName']
-                                          : "");
-                                      model.setEmail(value['Data']
-                                          ['VisitorData']['Email']);
-                                      model.setVisitorId(value['Data']
-                                          ['VisitorData']['VisitorID']);
-                                      model.setPhoneCode(value['Data']
-                                          ['VisitorData']['CountryCode']);
-                                      model.setPhoneNumber(value['Data']
-                                          ['VisitorData']['PhoneNumber']);
-                                      model.setOrigin(value['Data']
-                                          ['VisitorData']['CompanyName']);
-                                      model.setPhoto(value['Data']
-                                              ['VisitorData']['VisitorPhoto']
-                                          .toString()
-                                          .split(',')
-                                          .last);
-                                      // model.setVisitDate(
-                                      //     value['Data']['VisitorData']['VisitTime']);
-                                      model.setGender(value['Data']
-                                          ['VisitorData']['Gender']);
-                                      model.setReason(value['Data']
-                                          ['VisitorData']['VisitReason']);
-
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => VisitorInfoPage(
-                                            visitorId: model.visitorId,
-                                            firstName: model.firstName,
-                                            lastName: model.lastName,
-                                            email: model.email,
-                                            gender: model.gender,
-                                            visitReason: model.reason,
-                                            employee: model.employee,
-                                            visitDate: model.visitDate,
-                                            origin: model.origin,
-                                            photo: model.photo,
-                                            // photo: model.photo,
-                                            phoneCode: model.phoneCode,
-                                            phoneNumber: model.phoneNumber,
-                                            // genderString: value['Data']['VisitorData']
-                                            //     ['Gender'],
-                                            // reasonString: value['Data']['VisitorData']
-                                            //     ['VisitReason'],
-                                          ),
-                                        ),
-                                      );
-                                    }
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  VisitorInfoPage(
+                                                visitorId: model.visitorId,
+                                                firstName: model.firstName,
+                                                lastName: model.lastName,
+                                                email: model.email,
+                                                gender: model.gender,
+                                                visitReason: model.reason,
+                                                employee: model.employee,
+                                                visitDate: model.visitDate,
+                                                origin: model.origin,
+                                                photo: model.photo,
+                                                phoneCode: model.phoneCode,
+                                                phoneNumber: model.phoneNumber,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      } else {
+                                        print('Failed');
+                                      }
+                                    });
+                                    print(selectedVisitor.toList());
                                   } else {
-                                    print('Failed');
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                      builder: (context) => GoToSecurityPage(),
+                                    ));
                                   }
                                 });
-                                // selectedVisitor.forEach((element) {
-                                //   // clearVisitorData();
-                                //   if (element.completed == true) {
-                                //     // getVisitorDetail().then((value) {
-                                //     //   // for (var x in detailVisitor) {
-                                //     //   saveVisitorData(
-                                //     //           detailVisitor['FirstName'],
-                                //     //           detailVisitor['LastName'],
-                                //     //           detailVisitor['Gender'],
-                                //     //           detailVisitor['Email'],
-                                //     //           detailVisitor['Phone']
-                                //     //               .toString()
-                                //     //               .substring(1, 3),
-                                //     //           detailVisitor['Phone']
-                                //     //               .toString()
-                                //     //               .substring(3),
-                                //     //           "origin",
-                                //     //           detailVisitor['EmployeeName'],
-                                //     //           detailVisitor['VisitReason'],
-                                //     //           detailVisitor['VisitorPhoto'],
-                                //     //           element.completed!)
-                                //     //       .then((value) {
-                                //     //     Navigator.pushNamed(context, '/visitorInfo')
-                                //     //         .then((value) {
-                                //     //       setState(() {});
-                                //     //     });
-                                //     //   });
-                                //     //   // }
-                                //     // });
-                                //   } else {
-                                //     // getVisitorDetail();
-                                //     saveVisitorData(
-                                //         element.firstName.toString(),
-                                //         element.lastName.toString(),
-                                //         element.gender.toString(),
-                                //         element.email.toString(),
-                                //         element.phoneCode.toString(),
-                                //         element.phoneNumber.toString(),
-                                //         element.origin.toString(),
-                                //         element.employee.toString(),
-                                //         element.reason.toString(),
-                                //         "",
-                                //         element.completed!);
-                                //     // Navigator.push(
-                                //     //   context,
-                                //     //   MaterialPageRoute(
-                                //     //     builder: (BuildContext context) => NewGuestPage(
-                                //     //       isEdit: true,
-                                //     //     ),
-                                //     //   ),
-                                //     // );
-                                //   }
-                                // });
-                                print(selectedVisitor.toList());
                               }
                             },
                           ),

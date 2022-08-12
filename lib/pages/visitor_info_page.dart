@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:math' as math;
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -33,6 +35,7 @@ class VisitorInfoPage extends StatefulWidget {
     this.photo,
     this.visitReason,
     this.visitDate,
+    this.completePhoneNumber,
   });
 
   String? visitorId;
@@ -47,6 +50,7 @@ class VisitorInfoPage extends StatefulWidget {
   String? photo;
   String? employee;
   String? visitDate;
+  String? completePhoneNumber;
 
   @override
   State<VisitorInfoPage> createState() => _VisitorInfoPageState();
@@ -66,12 +70,16 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
   String? reason;
   String? visitDate;
   String? photo;
-  //     Provider.of<MainModel>(navKey.currentState!.context, listen: false).photo;
+  String? completePhoneNumber;
+  // Provider.of<MainModel>(navKey.currentState!.context, listen: false).photo;
   // Uint8List? photoBase64;
-
-  Uint8List convertBase64Image(String base64String) {
-    return Base64Decoder().convert(base64String.split(',').last);
-  }
+  Image _image = Image.network(
+    Provider.of<MainModel>(navKey.currentState!.context, listen: false).photo,
+  );
+  bool imageLoading = true;
+  // Uint8List convertBase64Image(String base64String) {
+  //   return Base64Decoder().convert(base64String.split(',').last);
+  // }
 
   Future getDataVisitor() async {
     var box = await Hive.openBox('visitorBox');
@@ -93,17 +101,28 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    _image.image
+        .resolve(ImageConfiguration())
+        .addListener(ImageStreamListener((info, call) {
+      if (mounted) {
+        setState(() {
+          imageLoading = false;
+        });
+      }
+    }));
     // getDataVisitor().then((value) {
     //   print(photo);
     //   photoBase64 = Base64Decoder().convert(
     //       Provider.of<MainModel>(context, listen: false).photo.split(',').last);
     // });
+    Provider.of<MainModel>(context, listen: false).setButtonLoading(false);
     visitorId = widget.visitorId;
     firstName = widget.firstName;
     lastName = widget.lastName;
     phoneCode = widget.phoneCode;
     phoneNumber = widget.phoneNumber;
     origin = widget.origin;
+    completePhoneNumber = widget.completePhoneNumber;
     switch (widget.visitReason) {
       case 0:
         reason = "Business";
@@ -169,15 +188,38 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        CircleAvatar(
-                          radius: 100,
-                          backgroundImage: MemoryImage(
-                            photo!.startsWith('data', 0)
-                                ? Base64Decoder()
-                                    .convert(photo!.split(',').last)
-                                : Base64Decoder().convert(photo!),
-                          ),
-                        ),
+                        model.statusVisitor == "APPROVED"
+                            ? imageLoading
+                                ? SizedBox(
+                                    height: 200,
+                                    width: 200,
+                                    child: SizedBox(
+                                      width: 50,
+                                      height: 50,
+                                      child: CircularProgressIndicator(
+                                        color: eerieBlack,
+                                      ),
+                                    ),
+                                  )
+                                : CircleAvatar(
+                                    backgroundColor: scaffoldBg,
+                                    radius: 100,
+                                    backgroundImage: NetworkImage(model.photo),
+                                  )
+                            : Transform(
+                                alignment: Alignment.center,
+                                transform: Matrix4.rotationY(math.pi),
+                                child: CircleAvatar(
+                                  radius: 100,
+                                  backgroundColor: scaffoldBg,
+                                  backgroundImage: MemoryImage(
+                                    photo!.startsWith('data', 0)
+                                        ? Base64Decoder()
+                                            .convert(photo!.split(',').last)
+                                        : Base64Decoder().convert(photo!),
+                                  ),
+                                ),
+                              ),
                         // Container(
                         //   width: 200,
                         //   // child: Image.asset('assets/avatars/avatar_male.png'),
@@ -225,7 +267,7 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
                                   Padding(
                                     padding: const EdgeInsets.only(top: 10),
                                     child: Text(
-                                      '+${model.phoneCode} ${model.phoneNumber}',
+                                      '$completePhoneNumber',
                                       style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w400),
@@ -285,80 +327,73 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
                               model.setButtonLoading(true);
                               if (model.isEdit == true) {
                                 if (model.isLastVisitor) {
-                                  saveVisitorForm(
-                                          widget.visitorId!,
-                                          widget.firstName!,
-                                          widget.lastName!,
-                                          widget.email!,
-                                          widget.visitReason!,
-                                          widget.gender!,
-                                          widget.origin!,
-                                          widget.phoneCode!,
-                                          widget.phoneNumber!,
-                                          widget.photo!,
-                                          model)
-                                      .then((value) {
-                                    setState(() {});
-                                    if (value['Status'] == "200") {
-                                      Navigator.pushNamed(
-                                          context, '/declaration');
-                                    }
-                                    if (value['Status'] == '400') {
-                                      Navigator.pushNamed(
-                                          context, '/declaration');
-                                    } else {
-                                      Navigator.pushNamed(
-                                          context, '/declaration');
-                                    }
-                                  }).onError((error, stackTrace) {
-                                    notifDialog(context, false,
-                                        'Something wrong, please go to receptionist!');
-                                  });
+                                  if (model.statusVisitor == "INVITED") {
+                                    saveVisitorForm(
+                                            widget.visitorId!,
+                                            widget.firstName!,
+                                            widget.lastName!,
+                                            widget.email!,
+                                            widget.visitReason!,
+                                            widget.gender!,
+                                            widget.origin!,
+                                            widget.phoneCode!,
+                                            widget.phoneNumber!,
+                                            widget.photo!,
+                                            model)
+                                        .then((value) {
+                                      model.setButtonLoading(false);
+                                      setState(() {});
+                                      if (value['Status'] == "200") {
+                                        Navigator.pushNamed(
+                                            context, '/declaration');
+                                      } else {
+                                        notifDialog(
+                                            context, false, value['Message']);
+                                      }
+                                    }).onError((error, stackTrace) {
+                                      notifDialog(context, false,
+                                          'Something wrong, please go to receptionist!');
+                                    });
+                                  } else {
+                                    model.setButtonLoading(false);
+                                    Navigator.pushNamed(
+                                        context, '/declaration');
+                                  }
                                 } else {
-                                  saveVisitorForm(
-                                          model.visitorId,
-                                          widget.firstName!,
-                                          widget.lastName!,
-                                          widget.email!,
-                                          widget.visitReason!,
-                                          widget.gender!,
-                                          widget.origin!,
-                                          widget.phoneCode!,
-                                          widget.phoneNumber!,
-                                          widget.photo!,
-                                          model)
-                                      .then((value) {
-                                    setState(() {});
-                                    if (value['Status'] == "200") {
-                                      getNextVisitorList(model);
-                                    }
-                                    if (value['Status'] == '400') {
-                                      getNextVisitorList(model);
-                                    }
-                                  });
-
-                                  // Navigator.pushNamed(context, '/welcome');
+                                  if (model.statusVisitor == "INVITED") {
+                                    saveVisitorForm(
+                                            model.visitorId,
+                                            widget.firstName!,
+                                            widget.lastName!,
+                                            widget.email!,
+                                            widget.visitReason!,
+                                            widget.gender!,
+                                            widget.origin!,
+                                            widget.phoneCode!,
+                                            widget.phoneNumber!,
+                                            widget.photo!,
+                                            model)
+                                        .then((value) {
+                                      setState(() {});
+                                      model.setButtonLoading(false);
+                                      if (value['Status'] == "200") {
+                                        getNextVisitorList(model);
+                                      }
+                                      if (value['Status'] == '400') {
+                                        getNextVisitorList(model);
+                                      }
+                                    });
+                                  }
+                                  if (model.statusVisitor == "APPROVED") {
+                                    getNextVisitorList(model);
+                                  }
                                 }
                               } else {
-                                // onSiteCheckin(
-                                //         widget.firstName!,
-                                //         widget.lastName!,
-                                //         widget.email!,
-                                //         widget.visitReason!,
-                                //         widget.gender!,
-                                //         widget.origin!,
-                                //         widget.phoneCode!,
-                                //         widget.phoneNumber!,
-                                //         widget.photo!)
-                                //     .then((value) {
-                                // if (value['Status'] == '200') {
                                 String formattedDate = DateFormat('d MMMM yyyy')
                                     .format(DateTime.now());
                                 model.setVisitDate(formattedDate);
                                 print(model.visitDate);
                                 Navigator.of(context).pushNamed('/declaration');
-                                //   }
-                                // });
                               }
                             },
                           ),
@@ -381,6 +416,7 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
         .then((value) {
       print(value);
       setState(() {});
+      model.setStatusVisitor(value['Data']['VisitorStatus']);
       if (value['Data']['VisitorStatus'] == "INVITED") {
         model.setIsLastVisitor(value['Data']['LastVisitor']);
         model.setVisitorId(value['Data']['VisitorData']['VisitorID']);
@@ -389,12 +425,17 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
             ? value['Data']['VisitorData']['LastName']
             : "");
         model.setEmail(value['Data']['VisitorData']['Email']);
+        // model.setIsLastVisitor(value['Data']['LastVisitor']);
+
         model.setGender(1);
         model.setReason(0);
         model.setOrigin("");
         model.setPhoto("");
         model.setPhoneCode("");
         model.setPhoneNumber("");
+        setState(() {
+          model.setButtonLoading(false);
+        });
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -418,11 +459,17 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
             .toString()
             .split(',')
             .last);
+        model.setIsLastVisitor(value['Data']['LastVisitor']);
         // model.setVisitDate(
         //     value['Data']['VisitorData']['VisitTime']);
         model.setGender(value['Data']['VisitorData']['Gender']);
         model.setReason(value['Data']['VisitorData']['VisitReason']);
-
+        model.setCompletePhoneNumber("+" +
+            value['Data']['VisitorData']['CountryCode'] +
+            value['Data']['VisitorData']['PhoneNumber']);
+        setState(() {
+          model.setButtonLoading(false);
+        });
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => VisitorInfoPage(
@@ -439,6 +486,7 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
               // photo: model.photo,
               phoneCode: model.phoneCode,
               phoneNumber: model.phoneNumber,
+              completePhoneNumber: model.completePhoneNumber,
               // genderString: value['Data']['VisitorData']
               //     ['Gender'],
               // reasonString: value['Data']['VisitorData']
@@ -461,11 +509,17 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
             .toString()
             .split(',')
             .last);
+        model.setIsLastVisitor(value['Data']['LastVisitor']);
         // model.setVisitDate(
         //     value['Data']['VisitorData']['VisitTime']);
         model.setGender(value['Data']['VisitorData']['Gender']);
         model.setReason(value['Data']['VisitorData']['VisitReason']);
-
+        model.setCompletePhoneNumber("+" +
+            value['Data']['VisitorData']['CountryCode'] +
+            value['Data']['VisitorData']['PhoneNumber']);
+        setState(() {
+          model.setButtonLoading(false);
+        });
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => VisitorInfoPage(
@@ -482,6 +536,7 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
               // photo: model.photo,
               phoneCode: model.phoneCode,
               phoneNumber: model.phoneNumber,
+              completePhoneNumber: model.completePhoneNumber,
               // genderString: value['Data']['VisitorData']
               //     ['Gender'],
               // reasonString: value['Data']['VisitorData']

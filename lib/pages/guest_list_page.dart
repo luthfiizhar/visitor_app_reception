@@ -51,84 +51,22 @@ class _GuestListPageState extends State<GuestListPage> {
 
   Future checkGuestStatus(List<Visitor> list) async {
     var status = false;
-    list.forEach((element) {
+    for (var element in list) {
       if (element.status!.contains("RESERVED")) {
         // Navigator.of(context).push(MaterialPageRoute(
         //   builder: (context) => GoToSecurityPage(),
         // ));
         print('status reserved');
         status = true;
-      } else {
-        status = false;
       }
-    });
+    }
     // list.map((e) {});
     return status;
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    items.add(GuestList(false, 'Ayana Dunne', true));
-    items.add(GuestList(false, 'Jacques Sierra', true));
-    items.add(GuestList(false, 'Sion Goulding', false));
-    items.add(GuestList(false, 'Theodora Neal', false));
-    items.add(GuestList(false, 'Coco Mcmillan', true));
-    items.add(GuestList(false, 'Yasin Barber', true));
-
-    // visitorList.add(Visitor(
-    //     firstName: 'Ayana',
-    //     lastName: 'Dunne',
-    //     email: 'ayadunne@gmail.com',
-    //     phoneCode: '62',
-    //     phoneNumber: '8585858585',
-    //     origin: 'PT XYZ',
-    //     employee: 'Mr A',
-    //     reason: '2',
-    //     gender: '2',
-    //     enabled: false,
-    //     completed: true));
-    // visitorList.add(Visitor(
-    //     firstName: 'Jaques',
-    //     lastName: 'Sierra',
-    //     email: 'jaques@gmail.com',
-    //     phoneCode: '62',
-    //     phoneNumber: '8585858585',
-    //     origin: 'PT XYZ',
-    //     employee: 'Mr B',
-    //     reason: '1',
-    //     gender: '1',
-    //     enabled: false,
-    //     completed: true));
-    // visitorList.add(Visitor(
-    //     firstName: 'Sion',
-    //     lastName: 'Goulding',
-    //     email: 'sion@gmail.com',
-    //     phoneCode: '62',
-    //     phoneNumber: '8585858585',
-    //     origin: 'PT XYZ',
-    //     employee: 'Mr C',
-    //     reason: '',
-    //     gender: '1',
-    //     enabled: false,
-    //     completed: true));
-    // visitorList.add(Visitor(
-    //     firstName: 'Theodora',
-    //     lastName: 'Neal',
-    //     email: 'theodora@gmail.com',
-    //     phoneCode: '62',
-    //     phoneNumber: '8585858585',
-    //     origin: 'PT XYZ',
-    //     employee: 'Mr A',
-    //     reason: '',
-    //     gender: '2',
-    //     enabled: false,
-    //     completed: true));
-    // items.add(GuestList(false, 'Ayana Dunne', true));
-    // checkData();
-    // print(visitorList);
-    // log(visitorList.toString());
     getAttendants().then((value) {
       // print(value.toString());
       setState(() {});
@@ -304,7 +242,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                   text: '${model.employee}',
                                   style: TextStyle(
                                       fontSize: 30,
-                                      fontWeight: FontWeight.w400,
+                                      fontWeight: FontWeight.w300,
                                       color: Color(0xFF393E46)),
                                 )
                               ]),
@@ -330,7 +268,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                 text: '${model.inviteCode}',
                                 style: TextStyle(
                                     fontSize: 30,
-                                    fontWeight: FontWeight.w400,
+                                    fontWeight: FontWeight.w300,
                                     color: Color(0xFF393E46)),
                               )
                             ]),
@@ -355,7 +293,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                 text: '${model.visitDate}',
                                 style: TextStyle(
                                     fontSize: 30,
-                                    fontWeight: FontWeight.w400,
+                                    fontWeight: FontWeight.w300,
                                     color: Color(0xFF393E46)),
                               )
                             ]),
@@ -381,7 +319,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                         map.lastName.toString(),
                                     style: TextStyle(
                                         fontSize: 30,
-                                        fontWeight: FontWeight.w400,
+                                        fontWeight: FontWeight.w300,
                                         color: onyxBlack),
                                   ),
                                   subtitle: map.status == "INVITED"
@@ -435,46 +373,47 @@ class _GuestListPageState extends State<GuestListPage> {
                                           ? false
                                           : map.enabled,
                                       onChanged: (enabled) {
+                                        print(enabled);
                                         if (enabled!) {
                                           if (selectedVisitor.isNotEmpty) {
                                             // selectedVisitor.removeLast();
                                           }
-                                          selectedVisitor.add(Visitor(
-                                              visitorId: map.visitorId,
-                                              firstName: map.firstName,
-                                              lastName: map.lastName,
-                                              status: map.status,
-                                              email: map.email,
-                                              origin: map.origin,
-                                              employee: map.employee,
-                                              gender: map.gender,
-                                              phoneCode: map.phoneCode,
-                                              phoneNumber: map.phoneNumber,
-                                              completed: map.completed,
-                                              reason: map.reason));
+                                          if (map.status != "CHECKED IN") {
+                                            model.setStatusVisitor(map.status!);
+                                            selectedVisitor.add(Visitor(
+                                                visitorId: map.visitorId,
+                                                firstName: map.firstName,
+                                                lastName: map.lastName,
+                                                status: map.status,
+                                                email: map.email,
+                                                origin: map.origin,
+                                                employee: map.employee,
+                                                gender: map.gender,
+                                                phoneCode: map.phoneCode,
+                                                phoneNumber: map.phoneNumber,
+                                                completed: map.completed,
+                                                reason: map.reason));
+                                          }
                                           setState(() {
                                             listSelected =
                                                 json.encode(selectedVisitor);
                                           });
                                           print(listSelected);
                                         } else {
+                                          print('uncheck');
                                           selectedVisitor.removeWhere(
                                               (element) =>
                                                   element.visitorId ==
                                                   map.visitorId);
+                                          // selectedVisitor.remove(map.visitorId);
+                                          // setState(() {});
+                                          setState(() {
+                                            listSelected =
+                                                json.encode(selectedVisitor);
+                                          });
+                                          print(listSelected);
                                         }
-                                        // else {
-                                        //   selectedVisitor.removeLast();
-                                        //   print(selectedVisitor);
-                                        // }
-                                        // for (var element in visitorList) {
-                                        //   element.enabled = false;
-                                        // }
                                         map.enabled = enabled;
-                                        // selectedVisitor.removeLast();
-                                        // selectedVisitor.add(
-                                        //     Visitor(firstName: map.firstName));
-                                        // print(selectedVisitor);
                                         setState(() {});
                                       },
                                     ),
@@ -517,7 +456,7 @@ class _GuestListPageState extends State<GuestListPage> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 100),
+                  padding: const EdgeInsets.only(top: 55, bottom: 20),
                   child: model.buttonLoading
                       ? CircularProgressIndicator(
                           color: eerieBlack,
@@ -529,8 +468,9 @@ class _GuestListPageState extends State<GuestListPage> {
                             title: 'Next',
                             onTap: () {
                               var index = model.indexPage;
-                              setState(() {});
-                              model.setButtonLoading(true);
+                              setState(() {
+                                model.setButtonLoading(true);
+                              });
                               // index++;
                               model.updateIndex(1);
                               print(model.indexPage);
@@ -544,7 +484,9 @@ class _GuestListPageState extends State<GuestListPage> {
                                 });
                               } else {
                                 checkGuestStatus(selectedVisitor).then((value) {
-                                  model.setButtonLoading(false);
+                                  // setState(() {
+                                  //   model.setButtonLoading(false);
+                                  // });
                                   print(value);
                                   if (!value) {
                                     model.setListSelectedVisitor(listSelected);
@@ -552,6 +494,8 @@ class _GuestListPageState extends State<GuestListPage> {
                                     getVisitorState(listSelected,
                                             model.indexPage, model)
                                         .then((value) {
+                                      model.setStatusVisitor(
+                                          value['Data']['VisitorStatus']);
                                       setState(() {});
                                       print(value);
                                       model.setisEdit(true);
@@ -563,16 +507,13 @@ class _GuestListPageState extends State<GuestListPage> {
                                           model.setFirstName(value['Data']
                                               ['VisitorData']['FirstName']);
                                           model.setLastName(value['Data']
-                                                          ['VisitorData']
-                                                      ['LastName'] !=
-                                                  null
-                                              ? value['Data']['VisitorData']
-                                                  ['LastName']
-                                              : "");
+                                                  ['VisitorData']['LastName'] ??
+                                              "");
                                           model.setEmail(value['Data']
                                               ['VisitorData']['Email']);
                                           model.setVisitorId(value['Data']
                                               ['VisitorData']['VisitorID']);
+                                          model.setButtonLoading(false);
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
@@ -581,7 +522,13 @@ class _GuestListPageState extends State<GuestListPage> {
                                                 isEdit: true,
                                               ),
                                             ),
-                                          );
+                                          ).then((value) {
+                                            setState(() {});
+                                            for (var element in visitorList) {
+                                              element.enabled = false;
+                                            }
+                                            selectedVisitor.clear();
+                                          });
                                         }
                                         if (value['Data']['VisitorStatus'] ==
                                             'RESERVED') {
@@ -615,8 +562,14 @@ class _GuestListPageState extends State<GuestListPage> {
                                               ['VisitorData']['Gender']);
                                           model.setReason(value['Data']
                                               ['VisitorData']['VisitReason']);
-
-                                          Navigator.of(context).push(
+                                          model.setCompletePhoneNumber('+' +
+                                              value['Data']['VisitorData']
+                                                  ['CountryCode'] +
+                                              value['Data']['VisitorData']
+                                                  ['PhoneNumber']);
+                                          model.setButtonLoading(false);
+                                          Navigator.of(context)
+                                              .push(
                                             MaterialPageRoute(
                                               builder: (context) =>
                                                   VisitorInfoPage(
@@ -632,9 +585,18 @@ class _GuestListPageState extends State<GuestListPage> {
                                                 photo: model.photo,
                                                 phoneCode: model.phoneCode,
                                                 phoneNumber: model.phoneNumber,
+                                                completePhoneNumber:
+                                                    model.completePhoneNumber,
                                               ),
                                             ),
-                                          );
+                                          )
+                                              .then((value) {
+                                            selectedVisitor.clear();
+                                            for (var element in visitorList) {
+                                              element.enabled = false;
+                                            }
+                                            setState(() {});
+                                          });
                                         }
                                         if (value['Data']['VisitorStatus'] ==
                                             'APPROVED') {
@@ -670,8 +632,15 @@ class _GuestListPageState extends State<GuestListPage> {
                                               ['VisitorData']['Gender']);
                                           model.setReason(value['Data']
                                               ['VisitorData']['VisitReason']);
-
-                                          Navigator.of(context).push(
+                                          model.setCompletePhoneNumber('+' +
+                                              value['Data']['VisitorData']
+                                                  ['CountryCode'] +
+                                              value['Data']['VisitorData']
+                                                  ['PhoneNumber']);
+                                          model.setButtonLoading(false);
+                                          setState(() {});
+                                          Navigator.of(context)
+                                              .push(
                                             MaterialPageRoute(
                                               builder: (context) =>
                                                   VisitorInfoPage(
@@ -687,9 +656,18 @@ class _GuestListPageState extends State<GuestListPage> {
                                                 photo: model.photo,
                                                 phoneCode: model.phoneCode,
                                                 phoneNumber: model.phoneNumber,
+                                                completePhoneNumber:
+                                                    model.completePhoneNumber,
                                               ),
                                             ),
-                                          );
+                                          )
+                                              .then((value) {
+                                            selectedVisitor.clear();
+                                            for (var element in visitorList) {
+                                              element.enabled = false;
+                                            }
+                                            setState(() {});
+                                          });
                                         }
                                       } else {
                                         print('Failed');
@@ -697,6 +675,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                     });
                                     print(selectedVisitor.toList());
                                   } else {
+                                    model.setButtonLoading(false);
                                     Navigator.of(context)
                                         .push(MaterialPageRoute(
                                       builder: (context) => GoToSecurityPage(),

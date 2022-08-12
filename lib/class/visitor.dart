@@ -30,7 +30,7 @@ class Visitor {
       this.completed});
   Map toJson() => {
         'VisitorID': visitorId,
-        'Status': status,
+        // 'Status': status,
         // 'FirstName': firstName,
         // 'LastName': lastName,
         // 'Email': email,

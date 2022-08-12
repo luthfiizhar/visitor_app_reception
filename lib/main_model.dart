@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 class MainModel extends ChangeNotifier {
@@ -11,6 +12,7 @@ class MainModel extends ChangeNotifier {
   String _origin = "";
   String _phoneCode = "";
   String _phoneNumber = "";
+  String _completePhoneNumber = "";
   int _gender = 1;
   int _reason = 0;
   String _employee = "";
@@ -19,6 +21,8 @@ class MainModel extends ChangeNotifier {
   bool _isLastVisitor = true;
   bool _isEdit = false;
   bool _buttonLoading = false;
+  String _statusVisitor = "";
+  XFile? _photoFile;
 
   int get indexPage => _index;
   String get inviteCode => _inviteCode;
@@ -30,6 +34,7 @@ class MainModel extends ChangeNotifier {
   String get origin => _origin;
   String get phoneCode => _phoneCode;
   String get phoneNumber => _phoneNumber;
+  String get completePhoneNumber => _completePhoneNumber;
   int get gender => _gender;
   int get reason => _reason;
   String get employee => _employee;
@@ -38,6 +43,13 @@ class MainModel extends ChangeNotifier {
   bool get isLastVisitor => _isLastVisitor;
   bool get isEdit => _isEdit;
   bool get buttonLoading => _buttonLoading;
+  String get statusVisitor => _statusVisitor;
+  XFile get photoFile => _photoFile!;
+
+  void setPhotoFile(XFile value) {
+    _photoFile = value;
+    notifyListeners();
+  }
 
   void updateIndex(int idx) {
     _index = idx;
@@ -89,6 +101,11 @@ class MainModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setCompletePhoneNumber(String value) {
+    _completePhoneNumber = value;
+    notifyListeners();
+  }
+
   void setIsLastVisitor(bool value) {
     _isLastVisitor = value;
     notifyListeners();
@@ -128,6 +145,11 @@ class MainModel extends ChangeNotifier {
     _buttonLoading = value;
   }
 
+  void setStatusVisitor(String value) {
+    _statusVisitor = value;
+    notifyListeners();
+  }
+
   void resetAll() {
     _index = 1;
     _inviteCode = "";
@@ -147,6 +169,8 @@ class MainModel extends ChangeNotifier {
     _isLastVisitor = true;
     _isEdit = false;
     _buttonLoading = false;
+    _statusVisitor = "";
+    _photoFile = null;
     notifyListeners();
   }
 }

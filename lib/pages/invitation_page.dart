@@ -34,6 +34,9 @@ class _InvitationPageState extends State<InvitationPage> {
   final _formKey = new GlobalKey<FormState>();
   // StreamController<ErrorAnimationType>? errorController;
 
+  final List<Visitor> selectedVisitor = [];
+  var listSelected;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -66,8 +69,8 @@ class _InvitationPageState extends State<InvitationPage> {
       var data = json.decode(response.body);
       debugPrint(data.toString());
       if (data != null) {
-        setState(() {});
-        model.setButtonLoading(false);
+        // setState(() {});
+        // model.setButtonLoading(false);
       }
       if (data['Status'] == "200") {
         var listBox = await Hive.openBox('listBox');
@@ -89,10 +92,12 @@ class _InvitationPageState extends State<InvitationPage> {
   @override
   Widget build(BuildContext context) {
     final defaultPinTheme = PinTheme(
+      // padding: const EdgeInsets.symmetric(vertical: 15),
+      padding: const EdgeInsets.only(top: 10),
       width: 80,
       height: 100,
       // padding: EdgeInsets.only(right: 20),
-      textStyle: TextStyle(
+      textStyle: const TextStyle(
           fontSize: 56, color: eerieBlack, fontWeight: FontWeight.w600),
       decoration: BoxDecoration(
         color: graySand,
@@ -103,7 +108,7 @@ class _InvitationPageState extends State<InvitationPage> {
 
     final focusedPinTheme = defaultPinTheme.copyDecorationWith(
       boxShadow: [
-        BoxShadow(
+        const BoxShadow(
           color: eerieBlack,
           offset: Offset(0.0, 5.0), //(x,y)
           blurRadius: 0,
@@ -151,330 +156,329 @@ class _InvitationPageState extends State<InvitationPage> {
               ),
               Center(
                 child: Container(
-                  padding: EdgeInsets.only(top: 400, left: 127, right: 127),
-                  child: Column(
-                    // mainAxisAlignment: MainAxisAlignment.start,
-                    // crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Container(
-                            child: Text('Please input your invitation code',
-                                textAlign: TextAlign.start,
-                                style: TextStyle(
-                                    fontFamily: 'Helvetica',
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.w400,
-                                    color: onyxBlack)),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 50),
-                            child: Form(
-                              key: _formKey,
-                              child: Pinput(
-                                  controller: _pinCode,
-                                  keyboardType: TextInputType.text,
-                                  textCapitalization:
-                                      TextCapitalization.characters,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  onCompleted: (pin) {
-                                    setState(() {
-                                      inviteCode = pin;
-                                    });
-                                  },
-                                  length: 6,
-                                  defaultPinTheme: defaultPinTheme,
-                                  focusedPinTheme: focusedPinTheme,
-                                  submittedPinTheme: submittedPinTheme,
-                                  errorTextStyle:
-                                      TextStyle(color: silver, fontSize: 18),
-                                  validator: (value) {
-                                    // value!.isEmpty || value.length < 6
-                                    //     ? 'This field is required'
-                                    //     : null;
-                                    if (value!.isEmpty) {
-                                      return 'This field is required';
+                  padding: EdgeInsets.only(top: 400),
+                  child: Container(
+                    // color: Colors.amber,
+                    child: Column(
+                      // mainAxisAlignment: MainAxisAlignment.start,
+                      // crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Align(
+                          alignment: Alignment.center,
+                          child: Text('Please input your invitation code   ',
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                  fontFamily: 'Helvetica',
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w300,
+                                  color: onyxBlack)),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 50),
+                          child: Form(
+                            key: _formKey,
+                            child: Pinput(
+                                controller: _pinCode,
+                                keyboardType: TextInputType.text,
+                                textCapitalization:
+                                    TextCapitalization.characters,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                onCompleted: (pin) {
+                                  setState(() {
+                                    inviteCode = pin;
+                                  });
+                                },
+                                length: 6,
+                                defaultPinTheme: defaultPinTheme,
+                                focusedPinTheme: focusedPinTheme,
+                                submittedPinTheme: submittedPinTheme,
+                                errorTextStyle: const TextStyle(
+                                    color: silver, fontSize: 18),
+                                validator: (value) {
+                                  // value!.isEmpty || value.length < 6
+                                  //     ? 'This field is required'
+                                  //     : null;
+                                  if (value!.isEmpty) {
+                                    return 'This field is required';
+                                  } else {
+                                    if (value.length < 6) {
+                                      return 'This field must be 6 characters';
                                     } else {
-                                      if (value.length < 6) {
-                                        return 'This field must be 6 characters';
-                                      } else {
-                                        return null;
-                                      }
+                                      return null;
                                     }
-                                  }),
-                            ),
+                                  }
+                                }),
                           ),
-                        ],
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(top: 250),
-                        child: model.buttonLoading
-                            ? CircularProgressIndicator(
-                                color: eerieBlack,
-                              )
-                            : RegularButton(
-                                width: 300,
-                                height: 80,
-                                title: 'Next',
-                                onTap: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    _formKey.currentState!.save();
-                                    setState(() {});
-                                    model.setButtonLoading(true);
-                                    print(inviteCode);
-                                    getVisitorListByInviteCode(model)
-                                        .then((value) {
-                                      if (value['Status'] == "200") {
-                                        debugPrint(value['Data'].toString());
-                                        model.setInviteCode(
-                                            inviteCode!.toUpperCase());
-                                        model.setEmployee(
-                                            value['Data']['Employee']);
-                                        model.setVisitDate(
-                                            value['Data']['Date']);
-                                        model.setVisitorId(value['Data']
-                                            ['Attendants'][0]['VisitorID']);
-                                        List attendants =
-                                            value['Data']['Attendants'];
-                                        // attendants = json.encode(attendants);
-                                        debugPrint(
-                                            attendants.length.toString());
-                                        print(model.visitorId);
-                                        if (attendants.length == 1) {
-                                          if (value['Data']['Attendants'][0]
-                                                  ['Status'] ==
-                                              "INVITED") {
-                                            getVisitorDetail(model.visitorId)
-                                                .then((value) {
-                                              print(value['Data'][0]);
-                                              model.setFirstName(value['Data']
-                                                  [0]['FirstName']);
-                                              model.setLastName(value['Data'][0]
-                                                              ['LastName'] ==
-                                                          null ||
-                                                      value['Data'][0]
-                                                              ['LastName'] ==
-                                                          "-"
-                                                  ? ""
-                                                  : value['Data'][0]
-                                                      ['LastName']);
-                                              model.setEmail(value['Data'][0]
-                                                              ['Email'] ==
-                                                          null ||
-                                                      value['Data'][0]
-                                                              ['Email'] ==
-                                                          "-"
-                                                  ? ""
-                                                  : value['Data'][0]['Email']);
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder:
-                                                      (BuildContext context) =>
-                                                          NewGuestPage(
-                                                    isEdit: true,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(top: 250),
+                          child: model.buttonLoading
+                              ? CircularProgressIndicator(
+                                  color: eerieBlack,
+                                )
+                              : RegularButton(
+                                  width: 300,
+                                  height: 80,
+                                  title: 'Next',
+                                  onTap: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      _formKey.currentState!.save();
+                                      setState(() {});
+                                      model.setButtonLoading(true);
+                                      print(inviteCode);
+                                      getVisitorListByInviteCode(model)
+                                          .then((value) {
+                                        if (value['Status'] == "200") {
+                                          debugPrint(value['Data'].toString());
+                                          model.setInviteCode(
+                                              inviteCode!.toUpperCase());
+                                          model.setEmployee(
+                                              value['Data']['Employee']);
+                                          model.setVisitDate(
+                                              value['Data']['Date']);
+                                          model.setVisitorId(value['Data']
+                                              ['Attendants'][0]['VisitorID']);
+                                          List attendants =
+                                              value['Data']['Attendants'];
+                                          // attendants = json.encode(attendants);
+                                          debugPrint(
+                                              attendants.length.toString());
+                                          print(model.visitorId);
+                                          if (attendants.length == 1) {
+                                            if (value['Data']['Attendants'][0]
+                                                    ['Status'] ==
+                                                "INVITED") {
+                                              model.setStatusVisitor(
+                                                  value['Data']['Attendants'][0]
+                                                      ['Status']);
+                                              selectedVisitor.add(Visitor(
+                                                visitorId: model.visitorId,
+                                              ));
+                                              listSelected =
+                                                  json.encode(selectedVisitor);
+                                              model.setListSelectedVisitor(
+                                                  listSelected);
+                                              print('invited');
+                                              getVisitorDetail(model.visitorId)
+                                                  .then((value) {
+                                                print(value['Data'][0]);
+                                                model.setFirstName(value['Data']
+                                                    [0]['FirstName']);
+                                                model.setLastName(value['Data']
+                                                                    [0]
+                                                                ['LastName'] ==
+                                                            null ||
+                                                        value['Data'][0]
+                                                                ['LastName'] ==
+                                                            "-"
+                                                    ? ""
+                                                    : value['Data'][0]
+                                                        ['LastName']);
+                                                model.setEmail(value['Data'][0]
+                                                                ['Email'] ==
+                                                            null ||
+                                                        value['Data'][0]
+                                                                ['Email'] ==
+                                                            "-"
+                                                    ? ""
+                                                    : value['Data'][0]
+                                                        ['Email']);
+                                                model.setButtonLoading(false);
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (BuildContext
+                                                            context) =>
+                                                        NewGuestPage(
+                                                      isEdit: true,
+                                                    ),
                                                   ),
-                                                ),
-                                              );
-                                            });
-                                            // model.setFirstName(value['Data']
-                                            //     ['Attendants'][0]['FirstName']);
-                                            // model.setLastName(value['Data']
-                                            //                 ['Attendants']
-                                            //             ['LastName'] !=
-                                            //         null
-                                            //     ? value['Data']['Attendants'][0]
-                                            //         ['LastName']
-                                            //     : "");
-                                            // model.setEmail(value['Data']
-                                            //                 ['Attendants'][0]
-                                            //             ['Email'] !=
-                                            //         null
-                                            //     ? value['Data']['Attendants'][0]
-                                            //         ['Email']
-                                            //     : "");
+                                                );
+                                              });
+                                              // model.setFirstName(value['Data']
+                                              //     ['Attendants'][0]['FirstName']);
+                                              // model.setLastName(value['Data']
+                                              //                 ['Attendants']
+                                              //             ['LastName'] !=
+                                              //         null
+                                              //     ? value['Data']['Attendants'][0]
+                                              //         ['LastName']
+                                              //     : "");
+                                              // model.setEmail(value['Data']
+                                              //                 ['Attendants'][0]
+                                              //             ['Email'] !=
+                                              //         null
+                                              //     ? value['Data']['Attendants'][0]
+                                              //         ['Email']
+                                              //     : "");
 
-                                          }
-                                          if (value['Data']['Attendants'][0]
-                                                  ['Status'] ==
-                                              "RESERVED") {
-                                            getVisitorDetail(model.visitorId)
-                                                .then((value) {
-                                              print(value['Data'][0]);
-                                              model.setFirstName(value['Data']
-                                                  [0]['FirstName']);
-                                              model.setLastName(value['Data'][0]
-                                                              ['LastName'] ==
-                                                          "-" ||
-                                                      value['Data'][0]
-                                                              ['LastName'] ==
-                                                          null
-                                                  ? ""
-                                                  : value['Data'][0]
-                                                      ['LastName']);
-                                              model.setEmail(value['Data'][0]
-                                                              ['Email'] ==
-                                                          "-" ||
-                                                      value['Data'][0]
-                                                              ['Email'] ==
-                                                          null
-                                                  ? ""
-                                                  : value['Data'][0]['Email']);
-                                              model.setReason(value['Data'][0]
-                                                  ['VisitReasonID']);
-                                              model.setGender(
-                                                  value['Data'][0]['GenderID']);
-                                              model.setOrigin(value['Data'][0]
-                                                  ['CompanyName']);
-                                              model.setPhoto(value['Data'][0]
-                                                  ['VisitorPhoto']);
-                                            });
-                                            Navigator.of(context)
-                                                .push(MaterialPageRoute(
-                                              builder: (context) =>
-                                                  GoToSecurityPage(),
-                                            ));
-                                            // model.setFirstName(value['Data']
-                                            //     ['Attendants']['FirstName']);
-                                            // model.setLastName(value['Data']
-                                            //                 ['Attendants']
-                                            //             ['LastName'] !=
-                                            //         null
-                                            //     ? value['Data']['Attendants']
-                                            //         ['LastName']
-                                            //     : "");
-                                            // model.setEmail(value['Data']
-                                            //                 ['VisitorData']
-                                            //             ['Email'] !=
-                                            //         null
-                                            //     ? value['Data']['VisitorData']
-                                            //         ['Email']
-                                            //     : "");
-                                            // model.setVisitorId(value['Data']
-                                            //     ['VisitorData']['VisitorID']);
-                                            // Navigator.push(
-                                            //   context,
-                                            //   MaterialPageRoute(
-                                            //     builder: (BuildContext context) =>
-                                            //         VisitorInfoPage(
-                                            //       visitorId: model.visitorId,
-                                            //       firstName: model.firstName,
-                                            //       lastName: model.lastName,
-                                            //       email: model.email,
-                                            //       gender: model.gender,
-                                            //       visitReason: model.reason,
-                                            //       employee: model.employee,
-                                            //       visitDate: model.visitDate,
-                                            //       origin: model.origin,
-                                            //       photo: model.photo,
-                                            //       phoneCode: model.phoneCode,
-                                            //       phoneNumber: model.phoneNumber,
-                                            //     ),
-                                            //   ),
-                                            // );
-                                          }
-                                          if (value['Data']['Attendants'][0]
-                                                  ['Status'] ==
-                                              "APPROVED") {
-                                            getVisitorDetail(model.visitorId)
-                                                .then((value) {
-                                              print(value['Data'][0]);
-                                              model.setFirstName(value['Data']
-                                                  [0]['FirstName']);
-                                              model.setLastName(value['Data'][0]
-                                                              ['LastName'] ==
-                                                          "-" ||
-                                                      value['Data'][0]
-                                                              ['LastName'] ==
-                                                          null
-                                                  ? ""
-                                                  : value['Data'][0]
-                                                      ['LastName']);
-                                              model.setEmail(value['Data'][0]
-                                                              ['Email'] ==
-                                                          "-" ||
-                                                      value['Data'][0]
-                                                              ['Email'] ==
-                                                          null
-                                                  ? ""
-                                                  : value['Data'][0]['Email']);
-                                              model.setReason(value['Data'][0]
-                                                  ['VisitReasonID']);
-                                              model.setGender(
-                                                  value['Data'][0]['GenderID']);
-                                              model.setOrigin(value['Data'][0]
-                                                  ['CompanyName']);
-                                              model.setPhoto(value['Data'][0]
-                                                  ['VisitorPhoto']);
-                                            });
-                                            // model.setFirstName(value['Data']
-                                            //     ['Attendants']['FirstName']);
-                                            // model.setLastName(value['Data']
-                                            //                 ['Attendants']
-                                            //             ['LastName'] !=
-                                            //         null
-                                            //     ? value['Data']['Attendants']
-                                            //         ['LastName']
-                                            //     : "");
-                                            // model.setEmail(value['Data']
-                                            //                 ['VisitorData']
-                                            //             ['Email'] !=
-                                            //         null
-                                            //     ? value['Data']['VisitorData']
-                                            //         ['Email']
-                                            //     : "");
-                                            // model.setVisitorId(value['Data']
-                                            //     ['VisitorData']['VisitorID']);
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (BuildContext context) =>
+                                            }
+                                            if (value['Data']['Attendants'][0]
+                                                    ['Status'] ==
+                                                "RESERVED") {
+                                              model.setStatusVisitor(
+                                                  value['Data']['Attendants'][0]
+                                                      ['Status']);
+                                              selectedVisitor.add(Visitor(
+                                                visitorId: model.visitorId,
+                                              ));
+                                              listSelected =
+                                                  json.encode(selectedVisitor);
+                                              model.setListSelectedVisitor(
+                                                  listSelected);
+                                              getVisitorDetail(model.visitorId)
+                                                  .then((value) {
+                                                print(value['Data'][0]);
+                                                model.setFirstName(value['Data']
+                                                    [0]['FirstName']);
+                                                model.setLastName(value['Data']
+                                                                    [0]
+                                                                ['LastName'] ==
+                                                            "-" ||
+                                                        value['Data'][0]
+                                                                ['LastName'] ==
+                                                            null
+                                                    ? ""
+                                                    : value['Data'][0]
+                                                        ['LastName']);
+                                                model.setEmail(value['Data'][0]
+                                                                ['Email'] ==
+                                                            "-" ||
+                                                        value['Data'][0]
+                                                                ['Email'] ==
+                                                            null
+                                                    ? ""
+                                                    : value['Data'][0]
+                                                        ['Email']);
+                                                model.setReason(value['Data'][0]
+                                                    ['VisitReasonID']);
+                                                model.setGender(value['Data'][0]
+                                                    ['GenderID']);
+                                                model.setOrigin(value['Data'][0]
+                                                    ['CompanyName']);
+                                                model.setPhoto(value['Data'][0]
+                                                    ['VisitorPhoto']);
+                                              });
+                                              model.setButtonLoading(false);
+                                              Navigator.of(context)
+                                                  .push(MaterialPageRoute(
+                                                builder: (context) =>
+                                                    GoToSecurityPage(),
+                                              ));
+                                            }
+                                            if (value['Data']['Attendants'][0]
+                                                    ['Status'] ==
+                                                "APPROVED") {
+                                              model.setStatusVisitor(
+                                                  value['Data']['Attendants'][0]
+                                                      ['Status']);
+                                              selectedVisitor.add(Visitor(
+                                                visitorId: model.visitorId,
+                                              ));
+                                              listSelected =
+                                                  json.encode(selectedVisitor);
+                                              model.setListSelectedVisitor(
+                                                  listSelected);
+                                              getVisitorDetail(model.visitorId)
+                                                  .then((value) {
+                                                print("approved");
+                                                print(value['Data'][0]);
+                                                model.setFirstName(value['Data']
+                                                    [0]['FirstName']);
+                                                model.setLastName(value['Data']
+                                                            [0]['LastName'] ==
+                                                        null
+                                                    ? ""
+                                                    : value['Data'][0]
+                                                        ['LastName']);
+                                                model.setEmail(value['Data'][0]
+                                                            ['Email'] ==
+                                                        null
+                                                    ? ""
+                                                    : value['Data'][0]
+                                                        ['Email']);
+                                                model.setReason(value['Data'][0]
+                                                    ['VisitReasonID']);
+                                                model.setGender(value['Data'][0]
+                                                    ['GenderID']);
+                                                model.setOrigin(value['Data'][0]
+                                                    ['CompanyName']);
+                                                model.setPhoto(value['Data'][0]
+                                                    ['VisitorPhoto']);
+                                                model.setPhoneCode(value['Data']
+                                                    [0]['CountryCode']);
+                                                model.setPhoneNumber(
+                                                    value['Data'][0]
+                                                        ['PhoneNumberRaw']);
+                                                model.setCompletePhoneNumber(
+                                                    value['Data'][0]['Phone']);
+                                                setState(() {});
+                                                model.setButtonLoading(false);
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (BuildContext
+                                                            context) =>
                                                         VisitorInfoPage(
-                                                  visitorId: model.visitorId,
-                                                  firstName: model.firstName,
-                                                  lastName: model.lastName,
-                                                  email: model.email,
-                                                  gender: model.gender,
-                                                  visitReason: model.reason,
-                                                  employee: model.employee,
-                                                  visitDate: model.visitDate,
-                                                  origin: model.origin,
-                                                  photo: model.photo,
-                                                  phoneCode: model.phoneCode,
-                                                  phoneNumber:
-                                                      model.phoneNumber,
-                                                ),
-                                              ),
-                                            );
+                                                      visitorId:
+                                                          model.visitorId,
+                                                      firstName:
+                                                          model.firstName,
+                                                      lastName: model.lastName,
+                                                      email: model.email,
+                                                      gender: model.gender,
+                                                      visitReason: model.reason,
+                                                      employee: model.employee,
+                                                      visitDate:
+                                                          model.visitDate,
+                                                      origin: model.origin,
+                                                      photo: model.photo,
+                                                      phoneCode:
+                                                          model.phoneCode,
+                                                      phoneNumber:
+                                                          model.phoneNumber,
+                                                      completePhoneNumber: model
+                                                          .completePhoneNumber,
+                                                    ),
+                                                  ),
+                                                ).then((value) {
+                                                  setState(() {
+                                                    model.setButtonLoading(
+                                                        false);
+                                                  });
+
+                                                  selectedVisitor.clear();
+                                                });
+                                                ;
+                                              });
+                                            }
+                                          } else {
+                                            setState(() {
+                                              model.setButtonLoading(false);
+                                            });
+
+                                            Navigator.of(context)
+                                                .pushNamed('/guestList');
                                           }
                                         } else {
-                                          Navigator.of(context)
-                                              .pushNamed('/guestList');
+                                          setState(() {});
+                                          model.setButtonLoading(false);
+                                          // print(error);
+                                          notifDialog(
+                                              context, false, value['Message']);
                                         }
-                                      } else {
+                                      }).onError((error, stackTrace) {
+                                        setState(() {});
                                         model.setButtonLoading(false);
-                                        // print(error);
-                                        notifDialog(
-                                            context, false, value['Message']);
-                                      }
-                                    }).onError((error, stackTrace) {
-                                      setState(() {});
-                                      model.setButtonLoading(false);
-                                      print(error);
-                                      notifDialog(context, false, '$error');
-                                    });
-                                  }
-                                },
-                              ),
-                      )
-                    ],
+                                        print(error);
+                                        notifDialog(context, false, '$error');
+                                      });
+                                    }
+                                  },
+                                ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
                 // child: Form(

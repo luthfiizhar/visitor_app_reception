@@ -1,5 +1,5 @@
 name: visitor_app
-description: A new Flutter project.
+description: Kawan Lama Group Head Office application for manage visitors.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -48,6 +48,8 @@ dependencies:
   http: ^0.13.4
   provider: ^6.0.3
   intl: ^0.17.0
+  cached_network_image: ^3.2.1
+  camerawesome: ^0.3.3
 
 dev_dependencies:
   flutter_test:

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:visitor_app/main_model.dart';
 
 Future getVisitorDetail(String visitorId) async {
+  print("visitor iD" + visitorId.toString());
   var url = Uri.https(apiUrl,
       '/VisitorManagementBackend/public/api/visitor/get-visitor-detail-list');
   Map<String, String> requestHeader = {
@@ -24,7 +25,7 @@ Future getVisitorDetail(String visitorId) async {
   try {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
-    print(data['Status']);
+    print("get visitor detail ->" + data.toString());
     return data;
   } on SocketException catch (e) {
     print(e);
@@ -50,14 +51,14 @@ Future getVisitorState(dynamic list, int index, MainModel model) async {
   try {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
-    if (data != null) {
-      model.setButtonLoading(false);
-    }
-    if (data['Data']['LastVisitor'] == true) {
-      model.setIsLastVisitor(true);
-    } else {
-      model.setIsLastVisitor(false);
-    }
+    // if (data != null) {
+    //   model.setButtonLoading(false);
+    // }
+    // if (data['Data']['LastVisitor'] == true) {
+    //   model.setIsLastVisitor(true);
+    // } else {
+    //   model.setIsLastVisitor(false);
+    // }
     print(data['Status']);
     return data;
   } on SocketException catch (e) {
@@ -103,7 +104,7 @@ Future saveVisitorForm(
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
     if (data != null) {
-      model.setButtonLoading(false);
+      // model.setButtonLoading(false);
     }
     print(data);
     return data;
@@ -153,7 +154,7 @@ Future onSiteCheckin(
   try {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
-    model.setButtonLoading(false);
+    // model.setButtonLoading(false);
     print(data);
     return data;
   } on SocketException catch (e) {
@@ -180,7 +181,7 @@ Future confirmAttendants(String listAttendant, MainModel model) async {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
     print(data);
-    model.setButtonLoading(false);
+    // model.setButtonLoading(false);
     return data;
   } on SocketException catch (e) {
     model.setButtonLoading(false);

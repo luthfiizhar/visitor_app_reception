@@ -74,7 +74,7 @@ class WelcomeGuestPage extends StatelessWidget {
                                         style: TextStyle(
                                             color: onyxBlack,
                                             fontSize: 32,
-                                            fontWeight: FontWeight.w400)),
+                                            fontWeight: FontWeight.w300)),
                                   ),
                                 ),
                               ],

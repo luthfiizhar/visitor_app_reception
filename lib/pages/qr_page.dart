@@ -8,13 +8,18 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:visitor_app/class/visitor.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
 import 'package:visitor_app/components/notif_dialog.dart';
 import 'package:visitor_app/components/regular_button.dart';
 import 'package:visitor_app/constant.dart';
+import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/main_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:visitor_app/pages/go_to_security_page.dart';
+import 'package:visitor_app/pages/new_guest_page.dart';
+import 'package:visitor_app/pages/visitor_info_page.dart';
 
 class QrCodePage extends StatefulWidget {
   const QrCodePage({Key? key}) : super(key: key);
@@ -29,14 +34,15 @@ class _QrCodePageState extends State<QrCodePage> {
   QRViewController? controller;
   bool scanned = false;
 
+  List<Visitor> selectedVisitor = [];
+  var listSelected;
+
   // late List<CameraDescription> cameras;
   // late CameraController controller;
   // bool _isReady = false;
 
   @override
   void initState() {
-    // TODO: implement initState
-
     // _setupCameras();
     super.initState();
   }
@@ -108,13 +114,135 @@ class _QrCodePageState extends State<QrCodePage> {
 
   Future checkBarcode(MainModel model) async {
     getVisitorListByInviteCode().then((value) {
-      // debugPrint(value['Data'].toString());
+      debugPrint(value['Data'].toString());
       if (value['Status'] == "200") {
+        model.setVisitorId(value['Data']['Attendants'][0]['VisitorID']);
         model.setInviteCode(result!.code.toString().toUpperCase());
         model.setEmployee(value['Data']['Employee']);
         model.setVisitDate(value['Data']['Date']);
-        Navigator.pushNamed(context, '/guestList');
+
+        List attendants = value['Data']['Attendants'];
+        if (attendants.length == 1) {
+          if (value['Data']['Attendants'][0]['Status'] == "INVITED") {
+            print('invited');
+            model.setStatusVisitor(value['Data']['Attendants'][0]['Status']);
+            selectedVisitor.add(Visitor(
+              visitorId: model.visitorId,
+            ));
+            listSelected = json.encode(selectedVisitor);
+            model.setListSelectedVisitor(listSelected);
+            getVisitorDetail(model.visitorId).then((value) {
+              print(value['Data'][0]);
+              model.setFirstName(value['Data'][0]['FirstName']);
+              model.setLastName(value['Data'][0]['LastName'] == null ||
+                      value['Data'][0]['LastName'] == "-"
+                  ? ""
+                  : value['Data'][0]['LastName']);
+              model.setEmail(value['Data'][0]['Email'] == null ||
+                      value['Data'][0]['Email'] == "-"
+                  ? ""
+                  : value['Data'][0]['Email']);
+              model.setButtonLoading(false);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) => NewGuestPage(
+                    isEdit: true,
+                  ),
+                ),
+              ).then((value) async {
+                await controller!.resumeCamera();
+              });
+            });
+          }
+          if (value['Data']['Attendants'][0]['Status'] == "RESERVED") {
+            model.setStatusVisitor(value['Data']['Attendants'][0]['Status']);
+            selectedVisitor.add(Visitor(
+              visitorId: model.visitorId,
+            ));
+            listSelected = json.encode(selectedVisitor);
+            model.setListSelectedVisitor(listSelected);
+            getVisitorDetail(model.visitorId).then((value) {
+              print(value['Data'][0]);
+              model.setFirstName(value['Data'][0]['FirstName']);
+              model.setLastName(value['Data'][0]['LastName'] == "-" ||
+                      value['Data'][0]['LastName'] == null
+                  ? ""
+                  : value['Data'][0]['LastName']);
+              model.setEmail(value['Data'][0]['Email'] == "-" ||
+                      value['Data'][0]['Email'] == null
+                  ? ""
+                  : value['Data'][0]['Email']);
+              model.setReason(value['Data'][0]['VisitReasonID']);
+              model.setGender(value['Data'][0]['GenderID']);
+              model.setOrigin(value['Data'][0]['CompanyName']);
+              model.setPhoto(value['Data'][0]['VisitorPhoto']);
+            });
+            model.setButtonLoading(false);
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => GoToSecurityPage(),
+            ));
+          }
+          if (value['Data']['Attendants'][0]['Status'] == "APPROVED") {
+            model.setStatusVisitor(value['Data']['Attendants'][0]['Status']);
+            selectedVisitor.add(Visitor(
+              visitorId: model.visitorId,
+            ));
+            listSelected = json.encode(selectedVisitor);
+            model.setListSelectedVisitor(listSelected);
+            print(model.visitorId);
+            getVisitorDetail(model.visitorId).then((value) {
+              print("approved");
+              print(value['Data'][0]);
+              model.setFirstName(value['Data'][0]['FirstName']);
+              model.setLastName(value['Data'][0]['LastName'] == null
+                  ? ""
+                  : value['Data'][0]['LastName']);
+              model.setEmail(value['Data'][0]['Email'] == null
+                  ? ""
+                  : value['Data'][0]['Email']);
+              model.setReason(value['Data'][0]['VisitReasonID']);
+              model.setGender(value['Data'][0]['GenderID']);
+              model.setOrigin(value['Data'][0]['CompanyName']);
+              model.setPhoto(value['Data'][0]['VisitorPhoto']);
+              model.setPhoneNumber(value['Data'][0]['Phone']);
+              model.setCompletePhoneNumber(value['Data'][0]['Phone']);
+              model.setButtonLoading(false);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) => VisitorInfoPage(
+                    visitorId: model.visitorId,
+                    firstName: model.firstName,
+                    lastName: model.lastName,
+                    email: model.email,
+                    gender: model.gender,
+                    visitReason: model.reason,
+                    employee: model.employee,
+                    visitDate: model.visitDate,
+                    origin: model.origin,
+                    photo: model.photo,
+                    phoneCode: model.phoneCode,
+                    phoneNumber: model.phoneNumber,
+                    completePhoneNumber: model.completePhoneNumber,
+                  ),
+                ),
+              ).then((value) async {
+                selectedVisitor.clear();
+                await controller!.resumeCamera();
+              });
+              ;
+            });
+          }
+        } else {
+          model.setButtonLoading(false);
+          Navigator.of(context).pushNamed('/guestList').then((value) async {
+            await controller!.resumeCamera();
+          });
+        }
+        // Navigator.pushNamed(context, '/guestList');
       } else {
+        model.setButtonLoading(false);
         notifDialog(context, false, value['Message']).then((value) {
           Navigator.pop(context);
         });
@@ -151,27 +279,27 @@ class _QrCodePageState extends State<QrCodePage> {
                       cutOutSize: scanArea),
                 ),
               ),
-              Expanded(
-                flex: 1,
-                child: Align(
-                  alignment: Alignment.center,
-                  child: Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: !scanned
-                        ? SizedBox()
-                        : SizedBox(
-                            height: 60,
-                            width: 200,
-                            child: RegularButton(
-                              title: 'Re Scan',
-                              onTap: () async {
-                                await controller!.resumeCamera();
-                              },
-                            ),
-                          ),
-                  ),
-                ),
-              ),
+              // Expanded(
+              //   flex: 1,
+              //   child: Align(
+              //     alignment: Alignment.center,
+              //     child: Padding(
+              //       padding: const EdgeInsets.all(15),
+              //       child: !scanned
+              //           ? SizedBox()
+              //           : SizedBox(
+              //               height: 60,
+              //               width: 200,
+              //               child: RegularButton(
+              //                 title: 'Re Scan',
+              //                 onTap: () async {
+              //                   await controller!.resumeCamera();
+              //                 },
+              //               ),
+              //             ),
+              //     ),
+              //   ),
+              // ),
               // Expanded(
               //   flex: 1,
               //   child: Center(

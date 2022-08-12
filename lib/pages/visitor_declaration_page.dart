@@ -52,7 +52,7 @@ class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
                       'By filling the form, You declare that:',
                       style: TextStyle(
                         fontSize: 30,
-                        fontWeight: FontWeight.w400,
+                        fontWeight: FontWeight.w300,
                         color: onyxBlack,
                       ),
                     ),
@@ -118,6 +118,8 @@ class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
                                     confirmAttendants(
                                             model.listSelectedVisitor, model)
                                         .then((value) {
+                                      setState(() {});
+                                      model.setButtonLoading(false);
                                       if (value['Status'] == '200') {
                                         clearVisitorData();
                                         model.resetAll();
@@ -143,6 +145,9 @@ class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
                                         Navigator.pushNamed(
                                             context, '/failed_page');
                                       }
+                                    }).onError((error, stackTrace) {
+                                      setState(() {});
+                                      model.setButtonLoading(false);
                                     });
                                   } else {
                                     onSiteCheckin(
@@ -158,6 +163,8 @@ class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
                                             model.employee,
                                             model)
                                         .then((value) {
+                                      setState(() {});
+                                      model.setButtonLoading(false);
                                       if (value['Status'] == '200') {
                                         // notifDialog(context, true).then((value) {
                                         //   Navigator.of(context)
@@ -175,6 +182,9 @@ class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
                                         Navigator.pushNamed(
                                             context, '/failed_page');
                                       }
+                                    }).onError((error, stackTrace) {
+                                      setState(() {});
+                                      model.setButtonLoading(false);
                                     });
                                   }
                                 },
@@ -213,16 +223,20 @@ class DeclarationTextContainer extends StatelessWidget {
                     color: eerieBlack)),
           ),
           Expanded(
-              child: Wrap(children: [
-            Text(
-              '$text',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w300,
-                color: onyxBlack,
-              ),
-            )
-          ])),
+            child: Wrap(
+              children: [
+                Text(
+                  '$text',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w300,
+                    color: onyxBlack,
+                    height: 1.2,
+                  ),
+                )
+              ],
+            ),
+          ),
         ],
       ),
     );

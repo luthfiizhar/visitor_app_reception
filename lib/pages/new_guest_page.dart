@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ import 'package:visitor_app/keys.dart';
 import 'package:visitor_app/main_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:visitor_app/pages/camera_page.dart';
+import 'package:visitor_app/pages/new_camera_page.dart';
 import 'package:visitor_app/pages/visitor_info_page.dart';
 
 class NewGuestPage extends StatefulWidget {
@@ -87,10 +89,20 @@ class _NewGuestPageState extends State<NewGuestPage> {
   String? base64image;
   final picker = ImagePicker();
   File? _image;
+  XFile? _imageX;
 
-  Future getCamera() async {
-    await availableCameras().then((value) => Navigator.push(context,
-        MaterialPageRoute(builder: (_) => CameraPage(cameras: value))));
+  Future getCamera(MainModel model) async {
+    await availableCameras().then(
+      (value) => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => CameraPage(cameras: value)))
+          .then((value) {
+        _image = File(model.photoFile.path);
+        List<int> imageBytes = _image!.readAsBytesSync();
+        base64image = base64Encode(imageBytes);
+      }),
+    );
+    // Navigator.push(
+    //     context, MaterialPageRoute(builder: (context) => NewCameraPage()));
   }
 
   Future getImage() async {
@@ -398,7 +410,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                             'Please fill in your data here',
                             style: TextStyle(
                                 fontSize: 30,
-                                fontWeight: FontWeight.w400,
+                                fontWeight: FontWeight.w300,
                                 color: onyxBlack),
                           ),
                         ],
@@ -452,7 +464,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                               padding: const EdgeInsets.only(top: 30.0),
                               // child: lastNameField(),
                               child: InputVisitorField(
-                                // enable: model.isEdit ? false : true,
+                                enable: model.isEdit ? false : true,
                                 controller: _lastName,
                                 label: 'Last Name',
                                 keyboardType: TextInputType.name,
@@ -485,6 +497,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                               // child: emailField(),
                               child: InputVisitorField(
                                   controller: _email,
+                                  enable: model.isEdit ? false : true,
                                   label: 'Email',
                                   focusNode: emailNode,
                                   keyboardType: TextInputType.emailAddress,
@@ -541,6 +554,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                 controller: _employee,
                                 label: 'Meeting with',
                                 focusNode: employeeNode,
+                                enable: widget.isEdit! ? false : true,
                                 keyboardType: TextInputType.name,
                                 textInputAction: TextInputAction.done,
                                 onSaved: (value) {
@@ -586,6 +600,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                         model.setReason(int.parse(reasonVisit));
                                         model.setPhoneCode(phoneCode);
                                         model.setPhoneNumber(phoneNumber);
+                                        model.setCompletePhoneNumber(
+                                            "+$phoneCode$phoneNumber");
 
                                         // model.set
                                         print(model.visitorId);
@@ -618,6 +634,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                                 photo: model.photo,
                                                 phoneCode: model.phoneCode,
                                                 phoneNumber: model.phoneNumber,
+                                                completePhoneNumber:
+                                                    model.completePhoneNumber,
                                               ),
                                             ),
                                           );
@@ -982,7 +1000,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                       style: TextStyle(
                           fontFamily: 'Helvetica',
                           fontSize: 24,
-                          fontWeight: FontWeight.w400,
+                          fontWeight: FontWeight.w300,
                           color: onyxBlack),
                     )
                   ])),
@@ -1163,115 +1181,129 @@ class _NewGuestPageState extends State<NewGuestPage> {
   }
 
   Widget photoField() {
-    return Container(
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 20),
-                child: FormLabel(
-                  text: 'Visitor Photo',
+    return Consumer<MainModel>(builder: (context, model, child) {
+      return Container(
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 20),
+                  child: FormLabel(
+                    text: 'Visitor Photo',
+                  ),
                 ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 15),
-            child: GestureDetector(
-              onTap: () {
-                if (_image == null) {
-                } else {
-                  getImage().then((value) {
-                    setState(() {
-                      emptyPhoto = false;
-                      print('base64');
-                      print(base64image);
-                      // log(base64image.toString());
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 15),
+              child: GestureDetector(
+                onTap: () {
+                  if (_imageX == null) {
+                  } else {
+                    // getImage().then((value) {
+                    //   setState(() {
+                    //     emptyPhoto = false;
+                    //     print('base64');
+                    //     print(base64image);
+                    //     // log(base64image.toString());
+                    //   });
+                    // });
+                    // print('tap');
+                    getCamera(model).then((value) {
+                      _imageX = model.photoFile;
                     });
-                  });
-                }
-              },
-              child: Container(
-                // padding: EdgeInsets.only(top: 15),
-                height: 461,
-                decoration: BoxDecoration(
-                  border: emptyPhoto
-                      ? Border.all(color: eerieBlack, width: 2.5)
-                      : Border.all(color: grayStone, width: 2.5),
-                  borderRadius: BorderRadius.circular(15),
-                  color: graySand,
-                  // image: _image == null
-                  //     ? null
-                  //     : DecorationImage(
-                  //         image: FileImage(_image!), fit: BoxFit.fitHeight),
-                ),
-                child: Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _image == null
-                          ? RegularButton(
-                              width: 225,
-                              height: 60,
-                              title: 'Take Photo',
-                              routeName: '',
-                              onTap: () {
-                                setState(() {
-                                  print('tap');
-                                  // getCamera();
+                  }
+                },
+                child: Container(
+                  // padding: EdgeInsets.only(top: 15),
+                  height: 461,
+                  decoration: BoxDecoration(
+                    border: emptyPhoto
+                        ? Border.all(color: eerieBlack, width: 2.5)
+                        : Border.all(color: grayStone, width: 2.5),
+                    borderRadius: BorderRadius.circular(15),
+                    color: graySand,
+                    // image: _image == null
+                    //     ? null
+                    //     : DecorationImage(
+                    //         image: FileImage(_image!), fit: BoxFit.fitHeight),
+                  ),
+                  child: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _imageX == null
+                            ? RegularButton(
+                                width: 225,
+                                height: 60,
+                                title: 'Take Photo',
+                                routeName: '',
+                                onTap: () {
+                                  setState(() {
+                                    print('tap');
+                                    getCamera(model).then((value) {
+                                      _imageX = model.photoFile;
+                                    });
 
-                                  getImage().then((value) {
-                                    emptyPhoto = false;
-                                    print('base64');
-                                    print(base64image);
+                                    // getImage().then((value) {
+                                    //   emptyPhoto = false;
+                                    //   print('base64');
+                                    //   print(base64image);
+                                    // });
                                   });
-                                });
-                              },
-                              sizeFont: 26,
-                              elevation: 0,
-                            )
-                          :
-                          // Container(
-                          //     height: 150,
-                          //     width: 150,
-                          //     decoration: BoxDecoration(
-
-                          //         border:
-                          //             Border.all(color: grayStone, width: 2.5),
-                          //         borderRadius: BorderRadius.circular(15),
-                          //         color: graySand,
-                          //         image: DecorationImage(
-                          //             image: FileImage(_image!),
-                          //             fit: BoxFit.contain)),
-                          //   )
-                          CircleAvatar(
-                              radius: 200, backgroundImage: FileImage(_image!))
-                    ],
+                                },
+                                sizeFont: 26,
+                                elevation: 0,
+                              )
+                            :
+                            // Container(
+                            //     height: 400,
+                            //     width: 400,
+                            //     decoration: BoxDecoration(
+                            //         border: Border.all(
+                            //             color: grayStone, width: 2.5),
+                            //         borderRadius: BorderRadius.circular(15),
+                            //         color: graySand,
+                            //         image: DecorationImage(
+                            //             image: FileImage(File(_imageX!.path)),
+                            //             fit: BoxFit.contain)),
+                            //     // child: Image.file(File(_imageX!.path)),
+                            //   )
+                            Transform(
+                                alignment: Alignment.center,
+                                transform: Matrix4.rotationY(math.pi),
+                                child: CircleAvatar(
+                                    radius: 200,
+                                    backgroundImage:
+                                        FileImage(File(_imageX!.path))),
+                              ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          emptyPhoto
-              ? Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Please take your photo before continue!',
-                        style: TextStyle(color: silver, fontSize: 18),
-                      ),
-                    ],
-                  ),
-                )
-              : SizedBox(),
-        ],
-      ),
-    );
+            emptyPhoto
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Please take your photo before continue!',
+                          style: TextStyle(color: silver, fontSize: 18),
+                        ),
+                      ],
+                    ),
+                  )
+                : SizedBox(),
+          ],
+        ),
+      );
+    });
   }
 }
 

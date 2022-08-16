@@ -330,7 +330,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                             'Data not complete',
                                             style: TextStyle(
                                                 fontSize: 20,
-                                                fontWeight: FontWeight.w400,
+                                                fontWeight: FontWeight.w300,
                                                 color: orangeRed),
                                           ),
                                         )
@@ -342,7 +342,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                                 'Visitor not verified',
                                                 style: TextStyle(
                                                     fontSize: 20,
-                                                    fontWeight: FontWeight.w400,
+                                                    fontWeight: FontWeight.w300,
                                                     color: orangeRed),
                                               ),
                                             )
@@ -356,7 +356,7 @@ class _GuestListPageState extends State<GuestListPage> {
                                                     style: TextStyle(
                                                         fontSize: 20,
                                                         fontWeight:
-                                                            FontWeight.w400,
+                                                            FontWeight.w300,
                                                         color: onyxBlack),
                                                   ),
                                                 )

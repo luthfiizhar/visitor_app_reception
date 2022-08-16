@@ -50,6 +50,7 @@ dependencies:
   intl: ^0.17.0
   cached_network_image: ^3.2.1
   camerawesome: ^0.3.3
+  email_validator: '^2.1.16'
 
 dev_dependencies:
   flutter_test:

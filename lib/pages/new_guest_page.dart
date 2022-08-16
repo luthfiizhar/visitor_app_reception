@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
@@ -502,6 +503,10 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                   focusNode: emailNode,
                                   keyboardType: TextInputType.emailAddress,
                                   textInputAction: TextInputAction.next,
+                                  validator: (value) =>
+                                      EmailValidator.validate(value!)
+                                          ? null
+                                          : "Please enter a valid email",
                                   onSaved: (value) {
                                     setState(() {
                                       email = _email.text;

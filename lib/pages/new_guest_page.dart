@@ -27,6 +27,7 @@ import 'package:http/http.dart' as http;
 import 'package:visitor_app/pages/camera_page.dart';
 import 'package:visitor_app/pages/new_camera_page.dart';
 import 'package:visitor_app/pages/visitor_info_page.dart';
+import 'package:visitor_app/responsive.dart';
 
 class NewGuestPage extends StatefulWidget {
   NewGuestPage({Key? key, this.isEdit}) : super(key: key);
@@ -383,12 +384,53 @@ class _NewGuestPageState extends State<NewGuestPage> {
         child: Scaffold(
           appBar: PreferredSize(
             preferredSize: Size.fromHeight(75),
-            child: CustAppBar(),
+            // child: CustAppBar(),
+            child: widget.isEdit!
+                ? CustAppBar()
+                : AppBar(
+                    automaticallyImplyLeading: false, // hides leading widget
+                    // flexibleSpace: SomeWidget(),
+                    // iconTheme: IconThemeData(
+                    //     color: Color(0xFFA80038), size: 32 //change your color here
+                    //     ),
+                    backgroundColor: Colors.transparent,
+                    elevation: 0.0,
+                    flexibleSpace: Padding(
+                      padding: const EdgeInsets.only(top: 10, left: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              // if (model.isLastVisitor) {
+                              //   model.setIsLastVisitor(false);
+                              // }
+                              // model.updateIndex(model.indexPage - 1);
+                              Navigator.pop(context);
+                            },
+                            // icon: ImageIcon(
+                            //   AssetImage('assets/icons/left_arrow.png'),
+                            //   size: 100,
+                            //   color: eerieBlack,
+                            // ),
+                            icon: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              size: 42,
+                              color: eerieBlack,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
           ),
           body: SingleChildScrollView(
             child: Center(
                 child: Container(
-              padding: EdgeInsets.only(top: 20, left: 100, right: 100),
+              padding: EdgeInsets.only(
+                  top: 20,
+                  left: Responsive.isSmallTablet(context) ? 50 : 100,
+                  right: Responsive.isSmallTablet(context) ? 50 : 100),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -641,6 +683,12 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                                 phoneNumber: model.phoneNumber,
                                                 completePhoneNumber:
                                                     model.completePhoneNumber,
+                                                statusVisitor:
+                                                    model.statusVisitor,
+                                                isLastVisitor:
+                                                    model.isLastVisitor,
+                                                isEdit: model.isEdit,
+                                                index: model.indexPage,
                                               ),
                                             ),
                                           );

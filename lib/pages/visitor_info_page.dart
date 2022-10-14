@@ -20,6 +20,7 @@ import 'package:visitor_app/functions/hive_functions.dart';
 import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/main_model.dart';
 import 'package:visitor_app/pages/new_guest_page.dart';
+import 'package:visitor_app/responsive.dart';
 
 class VisitorInfoPage extends StatefulWidget {
   VisitorInfoPage({
@@ -36,6 +37,10 @@ class VisitorInfoPage extends StatefulWidget {
     this.visitReason,
     this.visitDate,
     this.completePhoneNumber,
+    this.statusVisitor,
+    this.isLastVisitor,
+    this.isEdit,
+    this.index,
   });
 
   String? visitorId;
@@ -51,6 +56,10 @@ class VisitorInfoPage extends StatefulWidget {
   String? employee;
   String? visitDate;
   String? completePhoneNumber;
+  String? statusVisitor;
+  bool? isLastVisitor;
+  bool? isEdit;
+  int? index;
 
   @override
   State<VisitorInfoPage> createState() => _VisitorInfoPageState();
@@ -71,12 +80,13 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
   String? visitDate;
   String? photo;
   String? completePhoneNumber;
+  String? localPhoto;
+  String? status;
   // Provider.of<MainModel>(navKey.currentState!.context, listen: false).photo;
   // Uint8List? photoBase64;
-  Image _image = Image.network(
-    Provider.of<MainModel>(navKey.currentState!.context, listen: false).photo,
-  );
+  Image? _image;
   bool imageLoading = true;
+  bool isLoading = false;
   // Uint8List convertBase64Image(String base64String) {
   //   return Base64Decoder().convert(base64String.split(',').last);
   // }
@@ -101,7 +111,12 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _image.image
+    if (widget.photo!.startsWith("h", 0)) {
+      _image = Image.network(widget.photo!);
+    } else {
+      _image = Image.network("");
+    }
+    _image!.image
         .resolve(ImageConfiguration())
         .addListener(ImageStreamListener((info, call) {
       if (mounted) {
@@ -110,6 +125,22 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
         });
       }
     }));
+
+    switch (widget.statusVisitor) {
+      case "INVITED":
+        status = "Data Not Complete";
+        break;
+      case "RESERVED":
+        status = "Not Yet Verified";
+        break;
+      case "APPROVED":
+        status = "Verified";
+        break;
+      case "CHECKED IN":
+        status = "Already Checked In";
+        break;
+      default:
+    }
     // getDataVisitor().then((value) {
     //   print(photo);
     //   photoBase64 = Base64Decoder().convert(
@@ -146,7 +177,9 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
     email = widget.email;
     employee = widget.employee;
     visitDate = widget.visitDate;
-    photo = widget.photo;
+    photo = widget.photo ?? "";
+    // localPhoto = widget.photo ?? "";
+
     // if (widget.gender == null) {
     //   gender = widget.genderString;
     // }
@@ -162,244 +195,302 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
           child: Scaffold(
         appBar: PreferredSize(
             preferredSize: Size.fromHeight(75), child: CustAppBar()),
-        body: Center(
-          child: Container(
-            padding: EdgeInsets.only(top: 20, left: 100, right: 100),
-            child: Column(
-              // crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Visitor Info',
-                      style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w600,
-                          color: eerieBlack),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 50),
-                  child: Container(
-                    // padding: EdgeInsets.only(top: 50),
-                    height: 200,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        model.statusVisitor == "APPROVED"
-                            ? imageLoading
-                                ? SizedBox(
-                                    height: 200,
-                                    width: 200,
-                                    child: SizedBox(
-                                      width: 50,
-                                      height: 50,
-                                      child: CircularProgressIndicator(
-                                        color: eerieBlack,
+        body: SingleChildScrollView(
+          child: Center(
+            child: Container(
+              padding: EdgeInsets.only(
+                  top: 20,
+                  left: Responsive.isSmallTablet(context) ? 50 : 100,
+                  right: Responsive.isSmallTablet(context) ? 50 : 100),
+              child: Column(
+                // crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Visitor Info',
+                        style: TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w600,
+                            color: eerieBlack),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 50),
+                    child: Container(
+                      // padding: EdgeInsets.only(top: 50),
+                      height: 200,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          widget.statusVisitor == ""
+                              ? SizedBox()
+                              : widget.statusVisitor == "APPROVED" ||
+                                      widget.statusVisitor == "RESERVED"
+                                  ? imageLoading
+                                      ? SizedBox(
+                                          height: 200,
+                                          width: 200,
+                                          child: SizedBox(
+                                            width: 50,
+                                            height: 50,
+                                            child: CircularProgressIndicator(
+                                              color: eerieBlack,
+                                            ),
+                                          ),
+                                        )
+                                      : CircleAvatar(
+                                          backgroundColor: scaffoldBg,
+                                          radius: 100,
+                                          backgroundImage: NetworkImage(photo!),
+                                        )
+                                  : Transform(
+                                      alignment: Alignment.center,
+                                      transform: Matrix4.rotationY(math.pi),
+                                      child: CircleAvatar(
+                                        radius: 100,
+                                        backgroundColor: scaffoldBg,
+                                        backgroundImage: MemoryImage(
+                                          photo!.startsWith('data', 0)
+                                              ? Base64Decoder().convert(
+                                                  photo!.split(',').last)
+                                              : Base64Decoder().convert(photo!),
+                                        ),
                                       ),
                                     ),
-                                  )
-                                : CircleAvatar(
-                                    backgroundColor: scaffoldBg,
-                                    radius: 100,
-                                    backgroundImage: NetworkImage(model.photo),
-                                  )
-                            : Transform(
-                                alignment: Alignment.center,
-                                transform: Matrix4.rotationY(math.pi),
-                                child: CircleAvatar(
-                                  radius: 100,
-                                  backgroundColor: scaffoldBg,
-                                  backgroundImage: MemoryImage(
-                                    photo!.startsWith('data', 0)
-                                        ? Base64Decoder()
-                                            .convert(photo!.split(',').last)
-                                        : Base64Decoder().convert(photo!),
-                                  ),
+                          // Container(
+                          //   width: 200,
+                          //   // child: Image.asset('assets/avatars/avatar_male.png'),
+                          //   child: Image.memory(
+                          //     convertBase64Image(photo!),
+                          //     gaplessPlayback: true,
+                          //   ),
+                          //   // child: SvgPicture.asset(
+                          //   //   'assets/avatars/male_avatar.svg',
+                          //   //   // fit: BoxFit.cover,
+                          //   // ),
+                          // ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 30),
+                              child: Container(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${firstName} ${lastName}',
+                                      style: TextStyle(
+                                          fontSize: 36,
+                                          fontWeight: FontWeight.w600),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 10),
+                                      child: Text(
+                                        model.gender == 1 ? 'Male' : 'Female',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 10),
+                                      child: Text(
+                                        '$email',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 10),
+                                      child: Text(
+                                        '$completePhoneNumber',
+                                        style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                        // Container(
-                        //   width: 200,
-                        //   // child: Image.asset('assets/avatars/avatar_male.png'),
-                        //   child: Image.memory(
-                        //     convertBase64Image(photo!),
-                        //     gaplessPlayback: true,
-                        //   ),
-                        //   // child: SvgPicture.asset(
-                        //   //   'assets/avatars/male_avatar.svg',
-                        //   //   // fit: BoxFit.cover,
-                        //   // ),
-                        // ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 50),
-                            child: Container(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '${firstName} ${lastName}',
-                                    style: TextStyle(
-                                        fontSize: 36,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 10),
-                                    child: Text(
-                                      model.gender == 1 ? 'Male' : 'Female',
-                                      style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 10),
-                                    child: Text(
-                                      '$email',
-                                      style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 10),
-                                    child: Text(
-                                      '$completePhoneNumber',
-                                      style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 50, left: 30),
+                    child: DetailInfoText(
+                      label: 'Origin Company',
+                      detailInfo: '${origin}',
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 40, left: 30),
+                    child: DetailInfoText(
+                      label: 'Visit Reason',
+                      detailInfo: '${reason}',
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 40, left: 30),
+                    child: DetailInfoText(
+                      label: 'Meeting With',
+                      detailInfo: '${employee}',
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 40, left: 30),
+                    child: DetailInfoText(
+                      label: 'Visit Date',
+                      detailInfo: '${visitDate}',
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 40, left: 30),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Status',
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w400,
+                                  color: eerieBlack),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Text(
+                            status!,
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.w700,
+                              color: widget.statusVisitor == "RESERVED"
+                                  ? orangeRed
+                                  : widget.statusVisitor == "CHECKED IN"
+                                      ? onyxBlack
+                                      : greenPantone,
                             ),
                           ),
                         )
                       ],
                     ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 50, left: 30),
-                  child: DetailInfoText(
-                    label: 'Origin Company',
-                    detailInfo: '${origin}',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 40, left: 30),
-                  child: DetailInfoText(
-                    label: 'Visit Reason',
-                    detailInfo: '${reason}',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 40, left: 30),
-                  child: DetailInfoText(
-                    label: 'Meeting With',
-                    detailInfo: '${employee}',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 40, left: 30),
-                  child: DetailInfoText(
-                    label: 'Visit Date',
-                    detailInfo: '${visitDate}',
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(top: 180),
-                  child: model.buttonLoading
-                      ? CircularProgressIndicator(
-                          color: eerieBlack,
-                        )
-                      : SizedBox(
-                          height: 80,
-                          width: 600,
-                          child: RegularButton(
-                            title: 'Confirm',
-                            onTap: () {
-                              // print(model.isLastVisitor);
-                              setState(() {});
-                              model.setButtonLoading(true);
-                              if (model.isEdit == true) {
-                                if (model.isLastVisitor) {
-                                  if (model.statusVisitor == "INVITED") {
-                                    saveVisitorForm(
-                                            widget.visitorId!,
-                                            widget.firstName!,
-                                            widget.lastName!,
-                                            widget.email!,
-                                            widget.visitReason!,
-                                            widget.gender!,
-                                            widget.origin!,
-                                            widget.phoneCode!,
-                                            widget.phoneNumber!,
-                                            widget.photo!,
-                                            model)
-                                        .then((value) {
-                                      model.setButtonLoading(false);
+                  Padding(
+                    padding: EdgeInsets.only(top: 150, bottom: 30),
+                    child: isLoading
+                        ? CircularProgressIndicator(
+                            color: eerieBlack,
+                          )
+                        : SizedBox(
+                            height: 80,
+                            width: 600,
+                            child: RegularButton(
+                              title: 'Confirm',
+                              onTap: () {
+                                // print(model.isLastVisitor);
+                                setState(() {});
+                                // model.setButtonLoading(true);
+                                isLoading = true;
+                                if (widget.isEdit == true) {
+                                  if (widget.isLastVisitor!) {
+                                    if (widget.statusVisitor == "INVITED") {
+                                      saveVisitorForm(
+                                              widget.visitorId!,
+                                              widget.firstName!,
+                                              widget.lastName!,
+                                              widget.email!,
+                                              widget.visitReason!,
+                                              widget.gender!,
+                                              widget.origin!,
+                                              widget.phoneCode!,
+                                              widget.phoneNumber!,
+                                              widget.photo!,
+                                              model)
+                                          .then((value) {
+                                        // model.setButtonLoading(false);
+                                        isLoading = false;
+                                        setState(() {});
+                                        if (value['Status'] == "200") {
+                                          Navigator.pushNamed(
+                                              context, '/declaration');
+                                        } else {
+                                          notifDialog(
+                                              context, false, value['Title']);
+                                        }
+                                      }).onError((error, stackTrace) {
+                                        notifDialog(context, false,
+                                            'No internet connection.');
+                                      });
+                                    } else {
+                                      // model.setButtonLoading(false);
+                                      isLoading = false;
                                       setState(() {});
-                                      if (value['Status'] == "200") {
-                                        Navigator.pushNamed(
-                                            context, '/declaration');
-                                      } else {
-                                        notifDialog(
-                                            context, false, value['Message']);
-                                      }
-                                    }).onError((error, stackTrace) {
-                                      notifDialog(context, false,
-                                          'Something wrong, please go to receptionist!');
-                                    });
+                                      Navigator.pushNamed(
+                                              context, '/declaration')
+                                          .then((value) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                      });
+                                    }
                                   } else {
-                                    model.setButtonLoading(false);
-                                    Navigator.pushNamed(
-                                        context, '/declaration');
+                                    if (widget.statusVisitor == "INVITED") {
+                                      saveVisitorForm(
+                                              model.visitorId,
+                                              widget.firstName!,
+                                              widget.lastName!,
+                                              widget.email!,
+                                              widget.visitReason!,
+                                              widget.gender!,
+                                              widget.origin!,
+                                              widget.phoneCode!,
+                                              widget.phoneNumber!,
+                                              widget.photo!,
+                                              model)
+                                          .then((value) {
+                                        setState(() {});
+                                        // model.setButtonLoading(false);
+                                        isLoading = false;
+                                        if (value['Status'] == "200") {
+                                          getNextVisitorList(model);
+                                        }
+                                        if (value['Status'] == '400') {
+                                          getNextVisitorList(model);
+                                        }
+                                      });
+                                    }
+                                    if (widget.statusVisitor == "RESERVED") {
+                                      getNextVisitorList(model);
+                                    }
+                                    if (widget.statusVisitor == "APPROVED") {
+                                      getNextVisitorList(model);
+                                    }
                                   }
                                 } else {
-                                  if (model.statusVisitor == "INVITED") {
-                                    saveVisitorForm(
-                                            model.visitorId,
-                                            widget.firstName!,
-                                            widget.lastName!,
-                                            widget.email!,
-                                            widget.visitReason!,
-                                            widget.gender!,
-                                            widget.origin!,
-                                            widget.phoneCode!,
-                                            widget.phoneNumber!,
-                                            widget.photo!,
-                                            model)
-                                        .then((value) {
-                                      setState(() {});
-                                      model.setButtonLoading(false);
-                                      if (value['Status'] == "200") {
-                                        getNextVisitorList(model);
-                                      }
-                                      if (value['Status'] == '400') {
-                                        getNextVisitorList(model);
-                                      }
-                                    });
-                                  }
-                                  if (model.statusVisitor == "APPROVED") {
-                                    getNextVisitorList(model);
-                                  }
+                                  String formattedDate =
+                                      DateFormat('d MMMM yyyy')
+                                          .format(DateTime.now());
+                                  model.setVisitDate(formattedDate);
+                                  print(model.visitDate);
+                                  Navigator.of(context)
+                                      .pushNamed('/declaration');
                                 }
-                              } else {
-                                String formattedDate = DateFormat('d MMMM yyyy')
-                                    .format(DateTime.now());
-                                model.setVisitDate(formattedDate);
-                                print(model.visitDate);
-                                Navigator.of(context).pushNamed('/declaration');
-                              }
-                            },
+                              },
+                            ),
                           ),
-                        ),
-                )
-              ],
+                  )
+                ],
+              ),
             ),
           ),
         ),
@@ -443,7 +534,11 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
               isEdit: true,
             ),
           ),
-        );
+        ).then((value) {
+          isLoading = false;
+          print(model.indexPage);
+          setState(() {});
+        });
       }
       if (value['Data']['VisitorStatus'] == "RESERVED") {
         model.setFirstName(value['Data']['VisitorData']['FirstName']);
@@ -470,7 +565,8 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
         setState(() {
           model.setButtonLoading(false);
         });
-        Navigator.of(context).push(
+        Navigator.of(context)
+            .push(
           MaterialPageRoute(
             builder: (context) => VisitorInfoPage(
               visitorId: model.visitorId,
@@ -487,13 +583,22 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
               phoneCode: model.phoneCode,
               phoneNumber: model.phoneNumber,
               completePhoneNumber: model.completePhoneNumber,
+              statusVisitor: model.statusVisitor,
+              isLastVisitor: model.isLastVisitor,
+              isEdit: model.isEdit,
+              index: model.indexPage,
               // genderString: value['Data']['VisitorData']
               //     ['Gender'],
               // reasonString: value['Data']['VisitorData']
               //     ['VisitReason'],
             ),
           ),
-        );
+        )
+            .then((value) {
+          print(model.indexPage);
+          isLoading = false;
+          setState(() {});
+        });
       }
       if (value['Data']['VisitorStatus'] == "APPROVED") {
         model.setFirstName(value['Data']['VisitorData']['FirstName']);
@@ -520,7 +625,8 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
         setState(() {
           model.setButtonLoading(false);
         });
-        Navigator.of(context).push(
+        Navigator.of(context)
+            .push(
           MaterialPageRoute(
             builder: (context) => VisitorInfoPage(
               visitorId: model.visitorId,
@@ -537,15 +643,32 @@ class _VisitorInfoPageState extends State<VisitorInfoPage> {
               phoneCode: model.phoneCode,
               phoneNumber: model.phoneNumber,
               completePhoneNumber: model.completePhoneNumber,
+              statusVisitor: model.statusVisitor,
+              isLastVisitor: model.isLastVisitor,
+              isEdit: model.isEdit,
+              index: model.indexPage,
               // genderString: value['Data']['VisitorData']
               //     ['Gender'],
               // reasonString: value['Data']['VisitorData']
               //     ['VisitReason'],
             ),
           ),
-        );
+        )
+            .then((value) {
+          print(model.indexPage);
+          isLoading = false;
+          setState(() {});
+        });
       }
-      if (value['Status'] == '400') {}
+      if (value['Status'] == '400') {
+        isLoading = false;
+        setState(() {});
+        notifDialog(context, false, value['Title']);
+      }
+    }).onError((error, stackTrace) {
+      isLoading = false;
+      setState(() {});
+      notifDialog(context, false, 'No internet connection.');
     });
   }
 }

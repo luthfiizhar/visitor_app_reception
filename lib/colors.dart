@@ -11,3 +11,4 @@ const Color spanishGray = const Color(0xFF8F8F8F);
 const Color silver = const Color(0xFFC2C2C2);
 const Color orangeRed = const Color(0xFFF26529);
 const Color scaffoldBg = const Color(0xFFF5F5F5);
+const Color greenPantone = Color(0xFF0DB14B);

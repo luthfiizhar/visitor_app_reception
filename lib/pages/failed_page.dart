@@ -11,7 +11,13 @@ import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/main_model.dart';
 
 class FailedPage extends StatelessWidget {
-  const FailedPage({Key? key}) : super(key: key);
+  FailedPage({
+    Key? key,
+    this.message,
+    this.description,
+  }) : super(key: key);
+  String? message;
+  String? description;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +61,9 @@ class FailedPage extends StatelessWidget {
                                 RichText(
                                   textAlign: TextAlign.center,
                                   text: TextSpan(
-                                    text: 'Registration Failed!',
+                                    text: message!.isNotEmpty
+                                        ? message!
+                                        : "Registration Failed",
                                     style: TextStyle(
                                         color: eerieBlack,
                                         fontSize: 48,
@@ -67,7 +75,7 @@ class FailedPage extends StatelessWidget {
                                   child: RichText(
                                     textAlign: TextAlign.center,
                                     text: TextSpan(
-                                        text: 'Please try again',
+                                        text: description,
                                         style: TextStyle(
                                             color: iconBlack,
                                             fontSize: 32,
@@ -88,8 +96,11 @@ class FailedPage extends StatelessWidget {
                           child: RegularButton(
                             title: 'OK',
                             onTap: () {
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                  '/home', (Route<dynamic> route) => false);
+                              // Navigator.of(context).pushNamedAndRemoveUntil(
+                              //     '/home', (Route<dynamic> route) => false);
+                              int count = 0;
+                              Navigator.of(context)
+                                  .popUntil((_) => count++ >= 2);
                               // print(model.listSelectedVisitor);
                               // if (model.isEdit) {
                               //   confirmAttendants(model.listSelectedVisitor)

@@ -11,6 +11,7 @@ import 'package:visitor_app/components/regular_button.dart';
 import 'package:visitor_app/functions/hive_functions.dart';
 import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/main_model.dart';
+import 'package:visitor_app/responsive.dart';
 
 class WelcomeGuestPage extends StatelessWidget {
   const WelcomeGuestPage({Key? key}) : super(key: key);
@@ -27,15 +28,19 @@ class WelcomeGuestPage extends StatelessWidget {
                 height: MediaQuery.of(context).size.height,
                 // color: redBright,
                 padding: EdgeInsets.only(
-                    top: 120, left: 100, right: 100, bottom: 20),
+                    top: 0,
+                    left: Responsive.isSmallTablet(context) ? 70 : 100,
+                    right: Responsive.isSmallTablet(context) ? 70 : 100,
+                    bottom: 0),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(top: 70),
+                      padding: EdgeInsets.only(top: 0),
                       child: Container(
                         // color: Colors.black,
-                        // height: 400,
-                        // width: 520,
+                        height: 400,
+                        width: 520,
                         // child: FittedBox(
                         //   child: Image.asset('assets/welcome_image.png'),
                         //   fit: BoxFit.cover,
@@ -45,11 +50,12 @@ class WelcomeGuestPage extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 50),
+                      padding: EdgeInsets.only(
+                          top: Responsive.isSmallTablet(context) ? 30 : 50),
                       child: Container(
                         // padding: EdgeInsets.only(top: 100),
-                        height: 110,
-                        width: 600,
+                        // height: 110,
+                        // width: 600,
                         child: Center(
                           child: Wrap(children: [
                             Column(
@@ -84,7 +90,8 @@ class WelcomeGuestPage extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 170),
+                      padding: EdgeInsets.only(
+                          top: Responsive.isSmallTablet(context) ? 100 : 140),
                       child: SizedBox(
                           width: 300,
                           height: 80,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 import 'package:visitor_app/constant.dart';
 import 'package:visitor_app/main_model.dart';
 import 'package:visitor_app/pages/failed_page.dart';
@@ -16,6 +17,7 @@ import 'package:visitor_app/pages/welcome_guest_page.dart';
 
 void main() async {
   await Hive.initFlutter();
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     ChangeNotifierProvider<MainModel>(
       create: (_) => MainModel(),
@@ -42,6 +44,18 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.blue,
             scaffoldBackgroundColor: Color(0xFFF5F5F5)),
         home: HomePage(),
+        builder: (context, child) => ResponsiveWrapper.builder(
+          child,
+          maxWidth: 1200,
+          minWidth: 800,
+          defaultScale: true,
+          breakpoints: [
+            // ResponsiveBreakpoint.autoScale(360, name: MOBILE),
+            // ResponsiveBreakpoint.autoScale(600, name: MOBILE),
+            // ResponsiveBreakpoint.autoScale(600, name: TABLET),
+            // ResponsiveBreakpoint.autoScale(800, name: TABLET),
+          ],
+        ),
         navigatorKey: navKey,
         routes: {
           '/home': (context) => HomePage(),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:visitor_app/colors.dart';
+import 'package:visitor_app/responsive.dart';
 
 class HomeButton extends StatelessWidget {
   HomeButton(
@@ -32,8 +33,8 @@ class HomeButton extends StatelessWidget {
     }
 
     return SizedBox(
-      width: 170,
-      height: 210,
+      width: Responsive.isSmallTablet(context) ? 140 : 170,
+      height: Responsive.isSmallTablet(context) ? 200 : 210,
       child: ElevatedButton(
         style: ButtonStyle(
           padding: MaterialStateProperty.resolveWith<EdgeInsets?>(

@@ -6,11 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
+import 'package:visitor_app/components/nip_dialog.dart';
 import 'package:visitor_app/components/notif_dialog.dart';
+import 'package:visitor_app/components/override_login_dialog.dart';
 import 'package:visitor_app/components/regular_button.dart';
 import 'package:visitor_app/functions/hive_functions.dart';
 import 'package:visitor_app/functions/request_api.dart';
 import 'package:visitor_app/main_model.dart';
+import 'package:visitor_app/responsive.dart';
 
 class GoToSecurityPage extends StatelessWidget {
   const GoToSecurityPage({Key? key}) : super(key: key);
@@ -26,16 +29,17 @@ class GoToSecurityPage extends StatelessWidget {
             child: Container(
                 height: MediaQuery.of(context).size.height,
                 // color: redBright,
-                padding: EdgeInsets.only(
-                    top: 120, left: 100, right: 100, bottom: 20),
+                padding:
+                    EdgeInsets.only(top: 0, left: 30, right: 30, bottom: 0),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(top: 70),
+                      padding: EdgeInsets.only(top: 0),
                       child: Container(
                         // color: Colors.black,
-                        // height: 400,
-                        // width: 520,
+                        height: 380,
+                        width: 480,
                         // child: FittedBox(
                         //   child: Image.asset('assets/welcome_image.png'),
                         //   fit: BoxFit.cover,
@@ -60,7 +64,10 @@ class GoToSecurityPage extends StatelessWidget {
                                     text: 'Uh Oh!',
                                     style: TextStyle(
                                         color: eerieBlack,
-                                        fontSize: 48,
+                                        fontSize:
+                                            Responsive.isSmallTablet(context)
+                                                ? 44
+                                                : 48,
                                         fontWeight: FontWeight.w600),
                                   ),
                                 ),
@@ -73,7 +80,10 @@ class GoToSecurityPage extends StatelessWidget {
                                             'Please check your invitation code on Security Guard!',
                                         style: TextStyle(
                                             color: onyxBlack,
-                                            fontSize: 32,
+                                            fontSize: Responsive.isSmallTablet(
+                                                    context)
+                                                ? 28
+                                                : 32,
                                             fontWeight: FontWeight.w400)),
                                   ),
                                 ),
@@ -91,9 +101,10 @@ class GoToSecurityPage extends StatelessWidget {
                           child: RegularButton(
                             title: 'OK',
                             onTap: () {
-                              model.resetAll();
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                  '/home', (Route<dynamic> route) => false);
+                              Navigator.of(context).pop();
+                              // model.resetAll();
+                              // Navigator.of(context).pushNamedAndRemoveUntil(
+                              //     '/home', (Route<dynamic> route) => false);
                               // print(model.listSelectedVisitor);
                               // if (model.isEdit) {
                               //   confirmAttendants(model.listSelectedVisitor)
@@ -146,6 +157,26 @@ class GoToSecurityPage extends StatelessWidget {
                               // }
                             },
                           )),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return NipDialog();
+                          },
+                        );
+                      },
+                      child: const Text(
+                        'Override',
+                        style: TextStyle(
+                          fontSize: 36,
+                          color: eerieBlack,
+                        ),
+                      ),
                     )
                   ],
                 )

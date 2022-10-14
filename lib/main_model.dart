@@ -23,6 +23,7 @@ class MainModel extends ChangeNotifier {
   bool _buttonLoading = false;
   String _statusVisitor = "";
   XFile? _photoFile;
+  String _pinSecurity = "";
 
   int get indexPage => _index;
   String get inviteCode => _inviteCode;
@@ -45,6 +46,7 @@ class MainModel extends ChangeNotifier {
   bool get buttonLoading => _buttonLoading;
   String get statusVisitor => _statusVisitor;
   XFile get photoFile => _photoFile!;
+  String get pinSecurity => _pinSecurity;
 
   void setPhotoFile(XFile value) {
     _photoFile = value;
@@ -150,6 +152,11 @@ class MainModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setPinSecurity(String value) {
+    _pinSecurity = value;
+    notifyListeners();
+  }
+
   void resetAll() {
     _index = 1;
     _inviteCode = "";
@@ -171,6 +178,7 @@ class MainModel extends ChangeNotifier {
     _buttonLoading = false;
     _statusVisitor = "";
     _photoFile = null;
+    _pinSecurity = "";
     notifyListeners();
   }
 }

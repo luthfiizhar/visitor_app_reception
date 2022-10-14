@@ -123,6 +123,7 @@ class _QrCodePageState extends State<QrCodePage> {
 
         List attendants = value['Data']['Attendants'];
         if (attendants.length == 1) {
+          model.setIsLastVisitor(true);
           if (value['Data']['Attendants'][0]['Status'] == "INVITED") {
             print('invited');
             model.setStatusVisitor(value['Data']['Attendants'][0]['Status']);
@@ -263,7 +264,44 @@ class _QrCodePageState extends State<QrCodePage> {
       return SafeArea(
         child: Scaffold(
           appBar: PreferredSize(
-              preferredSize: Size.fromHeight(100), child: CustAppBar()),
+            preferredSize: Size.fromHeight(100),
+            child: AppBar(
+              automaticallyImplyLeading: false, // hides leading widget
+              // flexibleSpace: SomeWidget(),
+              // iconTheme: IconThemeData(
+              //     color: Color(0xFFA80038), size: 32 //change your color here
+              //     ),
+              backgroundColor: Colors.transparent,
+              elevation: 0.0,
+              flexibleSpace: Padding(
+                padding: const EdgeInsets.only(top: 10, left: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        // if (model.isLastVisitor) {
+                        //   model.setIsLastVisitor(false);
+                        // }
+                        // model.updateIndex(model.indexPage - 1);
+                        Navigator.pop(context);
+                      },
+                      // icon: ImageIcon(
+                      //   AssetImage('assets/icons/left_arrow.png'),
+                      //   size: 100,
+                      //   color: eerieBlack,
+                      // ),
+                      icon: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 42,
+                        color: eerieBlack,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           body: Column(
             children: <Widget>[
               Expanded(

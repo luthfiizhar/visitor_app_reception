@@ -29,6 +29,10 @@ Future getVisitorDetail(String visitorId) async {
     return data;
   } on SocketException catch (e) {
     print(e);
+    return e;
+  } on Error catch (e) {
+    print(e);
+    return e;
   }
 }
 
@@ -64,6 +68,10 @@ Future getVisitorState(dynamic list, int index, MainModel model) async {
   } on SocketException catch (e) {
     model.setButtonLoading(false);
     print(e);
+    return e;
+  } on Error catch (e) {
+    print(e);
+    return e;
   }
 }
 
@@ -111,6 +119,10 @@ Future saveVisitorForm(
   } on SocketException catch (e) {
     model.setButtonLoading(false);
     print(e);
+    return e;
+  } on Error catch (e) {
+    print(e);
+    return e;
   }
 }
 
@@ -154,12 +166,24 @@ Future onSiteCheckin(
   try {
     var response = await http.post(url, headers: requestHeader, body: bodySend);
     var data = json.decode(response.body);
+    // var data = json.decode("""
+    //          {
+    //               "Status": "400",
+    //               "Title": "Failed",
+    //               "Message": "Registration Failed!",
+    //               "Data": []
+    //           }
+    // """);
     // model.setButtonLoading(false);
     print(data);
     return data;
   } on SocketException catch (e) {
     model.setButtonLoading(false);
     print(e);
+    return e;
+  } on Error catch (e) {
+    print(e);
+    return e;
   }
 }
 
@@ -172,6 +196,7 @@ Future confirmAttendants(String listAttendant, MainModel model) async {
   };
   var bodySend = """ 
       {
+            "NIP" : "${model.pinSecurity}",
             "Attendants": $listAttendant
       }
     """;
@@ -186,5 +211,40 @@ Future confirmAttendants(String listAttendant, MainModel model) async {
   } on SocketException catch (e) {
     model.setButtonLoading(false);
     print(e);
+  } on Error catch (e) {
+    model.setButtonLoading(false);
+    print(e);
+    return e;
+  }
+}
+
+Future securityCheck(String listAttendant, String pin) async {
+  var url = Uri.https(
+      apiUrl, '/VisitorManagementBackend/public/api/visitor/security-check');
+  Map<String, String> requestHeader = {
+    'AppToken': 'mDMgDh4Eq9B0KRJLSOFI',
+    'Content-Type': 'application/json'
+  };
+  var bodySend = """ 
+      {
+            "NIP" : "$pin",
+            "Attendants": $listAttendant
+      }
+    """;
+
+  print(bodySend);
+  try {
+    var response = await http.post(url, headers: requestHeader, body: bodySend);
+    var data = json.decode(response.body);
+    // print(data);
+    // model.setButtonLoading(false);
+    return data;
+  } on SocketException catch (e) {
+    // model.setButtonLoading(false);
+    print(e);
+  } on Error catch (e) {
+    // model.setButtonLoading(false);
+    print(e);
+    return e;
   }
 }

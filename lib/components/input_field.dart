@@ -107,7 +107,7 @@ class _InputVisitorFieldState extends State<InputVisitorField> {
               keyboardType: widget.keyboardType,
               textInputAction: widget.textInputAction,
               cursorColor: onyxBlack,
-              // focusNode: widget.focusNode,
+              focusNode: widget.focusNode,
               controller: widget.controller,
               // onTap: () {
               //   if (widget.focusNode!.hasFocus) {

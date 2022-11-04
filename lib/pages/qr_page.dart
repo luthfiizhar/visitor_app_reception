@@ -226,6 +226,10 @@ class _QrCodePageState extends State<QrCodePage> {
                     phoneCode: model.phoneCode,
                     phoneNumber: model.phoneNumber,
                     completePhoneNumber: model.completePhoneNumber,
+                    statusVisitor: model.statusVisitor,
+                    isLastVisitor: model.isLastVisitor,
+                    isEdit: model.isEdit,
+                    index: model.indexPage,
                   ),
                 ),
               ).then((value) async {

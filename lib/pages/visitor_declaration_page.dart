@@ -181,8 +181,7 @@ class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
                                           // });
                                           Navigator.pushNamed(
                                               context, '/welcome');
-                                        }
-                                        if (value['Status'] == '400') {
+                                        } else {
                                           clearVisitorData();
                                           // model.resetAll();
                                           // notifDialog(context, false).then((value) {
@@ -203,6 +202,37 @@ class _VisitorDeclarationPageState extends State<VisitorDeclarationPage> {
                                             setState(() {});
                                           });
                                         }
+                                        // else if (value['Status'] == '400') {
+                                        //   clearVisitorData();
+                                        //   // model.resetAll();
+                                        //   // notifDialog(context, false).then((value) {
+                                        //   //   Navigator.of(context)
+                                        //   //       .pushNamedAndRemoveUntil('/home',
+                                        //   //           (Route<dynamic> route) => false);
+                                        //   // });
+                                        //   Navigator.of(context)
+                                        //       .push(
+                                        //     MaterialPageRoute(
+                                        //       builder: (context) => FailedPage(
+                                        //         message: value['Message'],
+                                        //       ),
+                                        //     ),
+                                        //   )
+                                        //       .then((value) {
+                                        //     isLoading = false;
+                                        //     setState(() {});
+                                        //   });
+                                        // }
+                                        // else if (value['Status'] == '500') {
+                                        //   clearVisitorData();
+                                        //   Navigator.of(context).push(
+                                        //     MaterialPageRoute(
+                                        //       builder: (context) => FailedPage(
+                                        //         message: value['Message'],
+                                        //       ),
+                                        //     ),
+                                        //   );
+                                        // }
                                       }).onError((error, stackTrace) {
                                         setState(() {});
                                         isLoading = false;

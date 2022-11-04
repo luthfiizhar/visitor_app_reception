@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -15,6 +16,7 @@ import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/components/custom_appbar.dart';
 import 'package:visitor_app/components/input_field.dart';
+import 'package:visitor_app/components/photo_dialog.dart';
 import 'package:visitor_app/components/regular_button.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -54,6 +56,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
   bool reasonLoading = false;
   bool genderLoading = false;
 
+  ScrollController scrollController = ScrollController();
+
   TextEditingController _firstName = TextEditingController();
   TextEditingController _lastName = TextEditingController();
   TextEditingController _email = TextEditingController();
@@ -92,6 +96,9 @@ class _NewGuestPageState extends State<NewGuestPage> {
   final picker = ImagePicker();
   File? _image;
   XFile? _imageX;
+
+  Timer? _timer;
+  int _timerCount = 3;
 
   Future getCamera(MainModel model) async {
     await availableCameras().then(
@@ -374,6 +381,8 @@ class _NewGuestPageState extends State<NewGuestPage> {
     _phoneNumber.dispose();
     _phoneNumberCode.dispose();
     _employee.dispose();
+
+    scrollController.dispose();
   }
 
   @override
@@ -425,6 +434,7 @@ class _NewGuestPageState extends State<NewGuestPage> {
                   ),
           ),
           body: SingleChildScrollView(
+            controller: scrollController,
             child: Center(
                 child: Container(
               padding: EdgeInsets.only(
@@ -745,6 +755,11 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                         // );
 
                                       } else {
+                                        scrollController.animateTo(
+                                          0,
+                                          duration: Duration(seconds: 1),
+                                          curve: Curves.easeInOut,
+                                        );
                                         setState(() {});
                                       }
                                     },
@@ -1264,6 +1279,9 @@ class _NewGuestPageState extends State<NewGuestPage> {
                     //   });
                     // });
                     // print('tap');
+                    // photoDialog(context).then(
+                    //   (value) {},
+                    // );
                     getCamera(model).then((value) {
                       _imageX = model.photoFile;
                     });
@@ -1296,11 +1314,19 @@ class _NewGuestPageState extends State<NewGuestPage> {
                                 routeName: '',
                                 onTap: () {
                                   setState(() {
-                                    print('tap');
+                                    // photoDialog(context);
+                                    // _timer = Timer(const Duration(seconds: 1),
+                                    //     () async {
+                                    //   if (_timerCount == 0) {
+                                    //   } else {
+                                    //     setState(() {});
+                                    //     _timerCount--;
+                                    //   }
+                                    // });
+
                                     getCamera(model).then((value) {
                                       _imageX = model.photoFile;
                                     });
-
                                     // getImage().then((value) {
                                     //   emptyPhoto = false;
                                     //   print('base64');

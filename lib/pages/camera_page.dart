@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:visitor_app/colors.dart';
 import 'package:visitor_app/main_model.dart';
@@ -122,6 +123,55 @@ class _CameraPageState extends State<CameraPage> {
                 child: Text(
                   _timerCount.toString(),
                   style: const TextStyle(fontSize: 82, color: Colors.white),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: 20,
+                  ),
+                  // child: Text(
+                  //   'No Mask/Hat',
+                  //   style: TextStyle(
+                  //     fontSize: 82,
+                  //     color: scaffoldBg,
+                  //     fontWeight: FontWeight.w300,
+                  //   ),
+                  // ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30,
+                      vertical: 30,
+                    ),
+                    decoration: BoxDecoration(
+                      color: scaffoldBg,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    width: 500,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            height: 125,
+                            width: 125,
+                            child: SvgPicture.asset('assets/no_mask.svg'),
+                          ),
+                          const SizedBox(
+                            width: 20,
+                          ),
+                          Expanded(
+                            child: Text(
+                              'No Mask/Hat',
+                              style: TextStyle(
+                                fontSize: 42,
+                                color: eerieBlack,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          )
+                        ]),
+                  ),
                 ),
               ),
               // Align(

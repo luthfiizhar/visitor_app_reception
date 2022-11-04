@@ -469,6 +469,12 @@ class _InvitationPageState extends State<InvitationPage> {
                                                       model.phoneNumber,
                                                   completePhoneNumber:
                                                       model.completePhoneNumber,
+                                                  statusVisitor:
+                                                      model.statusVisitor,
+                                                  isLastVisitor:
+                                                      model.isLastVisitor,
+                                                  isEdit: model.isEdit,
+                                                  index: model.indexPage,
                                                 ),
                                               ),
                                             ).then((value) {
